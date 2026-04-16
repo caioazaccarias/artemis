@@ -1,53 +1,56 @@
-# Controle Financeiro - Documentação do Projeto
+# Artemis - Documentação do Projeto
 
-Este documento apresenta uma visão geral do sistema de Controle Financeiro, incluindo seus principais recursos, regras de negócio, páginas, stack tecnológica e design system utilizado.
+Este documento apresenta uma visão geral do sistema Artemis (anteriormente conhecido como Controle Financeiro), incluindo seus principais recursos, regras de negócio, páginas, stack tecnológica e design system utilizado.
 
 ## 🚀 Principais Recursos do Projeto
 
-- **Autenticação de Usuários:** Sistema de login seguro utilizando JWT (JSON Web Token) e senhas criptografadas.
-- **Gestão de Transações:** CRUD (Criar, Ler, Atualizar e Deletar) completo para receitas e despesas financeiras.
-- **Dashboard Financeiro:** Resumo dinâmico exibindo saldos, total de entradas, total de saídas e gráficos interativos para análise financeira.
-- **Filtros e Buscas:** Capacidade de buscar transações e filtrá-las por período.
-- **Controle de Pagamento:** Possibilidade de marcar uma despesa ou receita como "paga" ou "pendente".
+- **Autenticação e Segurança:** Sistema de login seguro utilizando JWT (JSON Web Token) e senhas criptografadas (Bcrypt).
+- **Controle de Acesso Granular (RBAC):** Sistema de gestão de perfis (Roles) em que o administrador pode aplicar permissões específicas a cada grupo de usuários, limitando ou concedendo acesso a telas como Dashboard, Transações, Categorias, Usuários, Perfis e Backups.
+- **Gestão de Transações:** CRUD (Criar, Ler, Atualizar e Deletar) completo para fluxo de caixa.
+- **Dashboard Financeiro:** Resumo dinâmico exibindo saldo, total de entradas, total de saídas no mês/período, e gráficos interativos para análise rápida.
+- **Filtros e Buscas:** Capacidade de buscar dados por texto ou realizar filtros por períodos baseados no mês e ano.
+- **Controle de Pagamento:** Possibilidade de marcar uma despesa ou receita como "paga" (efetivada) ou "pendente" (previsão), ajustando o fluxo de caixa real.
+- **Ferramentas de Backups:** Funcionalidade na interface para realizar rápido backup de segurança extraindo JSON e recursos de importação (restauração de dados estruturados em banco).
 
 ## 💼 Regras de Negócios
 
-- **Dados Compartilhados:** Embora o sistema suporte múltiplos usuários para autenticação, todas as transações e categorias são compartilhadas globalmente. As operações de consulta, criação, edição e exclusão refletem para todos os usuários da plataforma.
-- **Tipos de Transação:** Uma transação é estritamente classificada como `entrada` (receita) ou `saida` (despesa).
-- **Status de Pagamento:** As transações possuem um status `paga` (booleano), permitindo gerenciar o fluxo de caixa considerando o que é apenas previsão e o que já foi consolidado/pago.
-- **Validação de Usuário:** O e-mail de um usuário deve ser único no sistema e é utilizado para a autenticação.
+- **Dados Compartilhados da Empresa:** O sistema suporta múltiplos usuários com login individualizado, mas todos acessam à mesma base consolidada de categorias e transações. 
+- **Classificação de Caixa:** Uma transação é estritamente de `entrada` (receita) ou `saida` (despesa).
+- **Projeção X Realização:** Status `paga` atua como chave para identificar o que já impactou o saldo real vs o que está apenas mapeado em faturas futuras.
+- **Unicidade e Tratamento de Usuários:** O e-mail do usuário não pode ser duplicado e é a chave da sua sessão.
+- **Proteção do Sistema (Root):** O Perfil de "Administrador" (ID = 1) não pode sofrer mutações de segurança nas permissões nem ser excluído.
 
-## 📄 Páginas da Aplicação
+## 📄 Páginas da Aplicação (SPA)
 
-A interface (SPA em React) está dividida nas seguintes páginas principais:
-
-- **`/` (Login.jsx):** Tela de entrada do sistema, onde os usuários inserem suas credenciais para obter acesso seguro à plataforma.
-- **`/dashboard` (Dashboard.jsx):** Tela inicial após o login. Apresenta cards visuais com saldo total, resumo de receitas e despesas e integração com gráficos (`Recharts`) para visualização de métricas de forma intuitiva.
-- **`/transactions` (Transactions.jsx):** Módulo central de gestão financeira. Traz listagem de todas as movimentações, formulários para inserção/edição rápida, além de busca e controles de mudança de status de pagamento.
-- **Layout Base (`Layout.jsx`):** Componente que envolve as rotas autenticadas, disponibilizando as estruturas visuais padrão de navegação, como barra lateral (sidebar) e cabeçalho (topbar).
+- **`/` (Dashboard.jsx):** Início do painel após login. Fornece métricas de painel executivo com cards e gráficos analíticos integrados.
+- **`/login` (Login.jsx):** Painel de acesso centralizado.
+- **`/transactions` (Transactions.jsx):** Motor do sistema de finanças. Lista fluxos em linhas tabeladas intuitivas e abriga o formulário flutuante (modal).
+- **`/categories` (Categories.jsx):** Gestor de agrupamento e organização das finanças (Ex: Lazer, Alimentação, Salário).
+- **`/users` (Users.jsx):** Controle dos operadores do sistema, seu acesso sistêmico (credenciais) e perfilamento (Roles).
+- **`/roles` (Roles.jsx):** Central de customização de políticas e permissões departamentais (RBAC).
+- **`/backup` (Backup.jsx):** Ferramenta utilitária de exportação ou reconstrução direta da estrutura relacional.
 
 ## 🛠️ Tecnologia Utilizada
 
 ### Backend (API REST)
-- **Node.js** com framework **Express.js** para estruturação das rotas e requisições HTTP.
-- **Sequelize** como ORM interativo para comunicação flexível com o banco de dados.
-- **MySQL** utilizado como o banco de dados relacional.
-- **JWT (jsonwebtoken)** e **bcryptjs** responsáveis pela camada de autenticação, sessões e criptografia.
-- Utilitários: **Cors**, **Dotenv**, **Nodemon**.
+- **Node.js** com framework minimalista **Express.js**.
+- **Sequelize** como ORM escalável.
+- **MySQL** utilizado como SGBD relacional subjacente.
+- Segurança via **JWT (jsonwebtoken)** e hash criptográfico **bcryptjs**.
 
 ### Frontend (SPA React)
-- **React.js** empacotado e otimizado através do **Vite**.
-- **React Router Dom** utilizado para navegação do lado do cliente entre as páginas.
-- **Axios** para requisições assíncronas à API.
-- **React Hook Form** atuando na gerência, performance e validação intuitiva de grandes formulários.
-- **Recharts** como ferramenta para renderização e montagem dos gráficos no Dashboard.
-- **SweetAlert2** encarregado das notificações visuais interativas e modais de confirmação.
+- React.js otimizado via fluxo de compilação ultrarrápido **Vite**.
+- Navegação assíncrona orientada a rotas privadas utilizando **React Router Dom**.
+- Construção resiliente e fácil validação de forms pelo **React Hook Form**.
+- Exibição de Data-Viz (Gráficos) com **Recharts**.
+- Alertas dinâmicos com **SweetAlert2**.
+- Gestão fluida de chamadas HTTP através do **Axios**.
 
 ## 🎨 Design System e UI
 
-O visual do frontend foi fundamentado em layouts administrativos de alta conversão visual:
+O visual foi trabalhado e construído em bases administrativas modernas e de rápida leitura de BI (Business Intelligence):
 
-- **AdminLTE (v3):** Core do design da aplicação. Garante uma interface limpa, altamente profissional e adaptada ao formato típico de dashboards (com painéis expansíveis, sidebar retrátil e cards de dados).
-- **Bootstrap 4:** Atua como motor visual base e grade (grid) do sistema em parceria com o AdminLTE. Fornece flexibilidade, classes utilitárias rápidas, modais, botões e controles de formulário.
-- **FontAwesome (Free):** Família e padrão de ícones aplicados globalmente na aplicação (menus, botões de ação na tabela de transações e cards visuais).
-- O sistema mantém arquivos locais de CSS para ajustes finos sobre a personalização principal.
+- **Branding "Artemis":** Atualização na tipografia e nos vetores, voltada a um sistema polido, veloz e robusto.
+- **AdminLTE (v3) / Bootstrap 4:** Utilização da biblioteca AdminLTE como motor principal para gerar os Sidebars (menus em colunas), Painéis Modais, Tabelas estilizadas Responsivas e Elementos estruturais.
+- **FontAwesome (Free):** Motor para ícones de ação.
+- O sistema interage através de comportamentos otimizados de UX em formulários (ex: autofoco inteligente na Descrição do Lançamento, interações keydown de submissão do form) e tratamento assíncrono.

@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # ─── Banco de Dados MySQL ─────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: artemis_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - artemis_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+
+  # ─── API Backend (Node.js) ────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: artemis_backend
+    restart: always
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - artemis_network
+
+  # ─── Frontend (React + Nginx) ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: artemis_frontend
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - artemis_network
+    # Em prod, o nginx-proxy externo gerencia a exposição das portas.
+    # Para teste local, descomente as linhas abaixo:
+    # ports:
+    #   - "8080:80"
+
+networks:
+  artemis_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
