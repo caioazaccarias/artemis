@@ -3,7 +3,7 @@ const { Transaction } = require('../models');
 // Cria uma nova transação
 exports.create = async (req, res) => {
   try {
-    const { tipo, valor, categoria, data, descricao } = req.body;
+    const { tipo, valor, categoria, data, descricao, paga } = req.body;
     
     const transaction = await Transaction.create({
       user_id: req.userId, // Obtido pelo middleware de autenticação
@@ -11,7 +11,8 @@ exports.create = async (req, res) => {
       valor,
       categoria,
       data,
-      descricao
+      descricao,
+      paga: tipo === 'saida' ? !!paga : false
     });
 
     return res.status(201).json(transaction);
@@ -34,28 +35,29 @@ exports.list = async (req, res) => {
   }
 };
 
-// Atualiza uma transação (somente se pertencer ao usuário)
-exports.update = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { tipo, valor, categoria, data, descricao } = req.body;
-
-    const transaction = await Transaction.findOne({ where: { id, user_id: req.userId } });
-
-    if (!transaction) {
-      return res.status(404).json({ error: 'Transação não encontrada ou você não tem permissão.' });
-    }
-
-    await transaction.update({
-      tipo,
-      valor,
-      categoria,
-      data,
-      descricao
-    });
-
-    return res.json(transaction);
-  } catch (err) {
+  // Atualiza uma transação (somente se pertencer ao usuário)
+  exports.update = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { tipo, valor, categoria, data, descricao, paga } = req.body;
+  
+      const transaction = await Transaction.findOne({ where: { id, user_id: req.userId } });
+  
+      if (!transaction) {
+        return res.status(404).json({ error: 'Transação não encontrada ou você não tem permissão.' });
+      }
+  
+      await transaction.update({
+        tipo: tipo !== undefined ? tipo : transaction.tipo,
+        valor: valor !== undefined ? valor : transaction.valor,
+        categoria: categoria !== undefined ? categoria : transaction.categoria,
+        data: data !== undefined ? data : transaction.data,
+        descricao: descricao !== undefined ? descricao : transaction.descricao,
+        paga: paga !== undefined ? !!paga : transaction.paga
+      });
+  
+      return res.json(transaction);
+    } catch (err) {
     return res.status(400).json({ error: 'Erro ao atualizar transação', details: err.message });
   }
 };

@@ -1,0 +1,10 @@
+/* AdminLTE and Bootstrap Styles */
+@import 'admin-lte/dist/css/adminlte.min.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/* Custom Overrides */
+body {
+  background-color: #f4f6f9;
+  margin: 0;
+  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
