@@ -50,14 +50,12 @@ services:
       dockerfile: Dockerfile
     container_name: artemis_frontend
     restart: always
+    ports:
+      - "8081:80"  # Expõe na porta 8081 para o Coolify/Traefik rotear
     depends_on:
       - backend
     networks:
       - artemis_network
-    # Em prod, o nginx-proxy externo gerencia a exposição das portas.
-    # Para teste local, descomente as linhas abaixo:
-    # ports:
-    #   - "8080:80"
 
 networks:
   artemis_network:
