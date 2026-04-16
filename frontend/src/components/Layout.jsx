@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+
+const Clock = () => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <span>{time.toLocaleString('pt-BR')}</span>;
+};
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -53,6 +64,20 @@ const Layout = () => {
                   <p>Transações</p>
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/categories" className="nav-link">
+                  <i className="nav-icon fas fa-tags"></i>
+                  <p>Categorias</p>
+                </Link>
+              </li>
+              {user?.role === 'admin' && (
+                <li className="nav-item">
+                  <Link to="/users" className="nav-link">
+                    <i className="nav-icon fas fa-users"></i>
+                    <p>Usuários</p>
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
         </div>
@@ -63,8 +88,8 @@ const Layout = () => {
         <Outlet />
       </div>
 
-      <footer className="main-footer">
-        <strong>&copy; 2026 AdminLTE + React.</strong>
+      <footer className="main-footer text-right">
+        <strong><Clock /></strong>
       </footer>
     </div>
   );

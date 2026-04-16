@@ -23,6 +23,10 @@ const Transaction = sequelize.define('Transaction', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  categoria_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
   data: {
     type: DataTypes.DATEONLY,
     allowNull: false,

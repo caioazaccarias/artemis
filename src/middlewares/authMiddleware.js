@@ -26,8 +26,9 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ error: 'Token inválido' });
     }
 
-    // Pendura o id do usuário no request para os próximos middlewares/controllers usarem
+    // Pendura o id e o role do usuário no request para os próximos middlewares/controllers usarem
     req.userId = decoded.id;
+    req.userRole = decoded.role;
     return next();
   });
 };

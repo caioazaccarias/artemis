@@ -5,17 +5,26 @@ import Swal from 'sweetalert2';
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const { register, handleSubmit, reset, watch } = useForm();
+  const currentDate = new Date();
+  const currentMonthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+  const [filterMonth, setFilterMonth] = useState(currentMonthYear);
+  
+  const { register, handleSubmit, reset, watch, setValue } = useForm();
   const watchType = watch('type');
 
   const loadTransactions = async () => {
     try {
-      const response = await api.get('/transactions');
-      setTransactions(response.data);
+      const [transRes, catRes] = await Promise.all([
+        api.get('/transactions'),
+        api.get('/categories')
+      ]);
+      setTransactions(transRes.data);
+      setCategories(catRes.data);
     } catch (error) {
       console.error(error);
     }
@@ -37,6 +46,7 @@ const Transactions = () => {
           descricao: data.description,
           valor: Number(parsedAmount),
           tipo: data.type,
+          categoria_id: data.categoria_id || null,
           data: data.date,
           paga: data.paga
         });
@@ -46,6 +56,7 @@ const Transactions = () => {
           descricao: data.description,
           valor: Number(parsedAmount),
           tipo: data.type,
+          categoria_id: data.categoria_id || null,
           data: data.date,
           paga: data.paga
         });
@@ -73,6 +84,7 @@ const Transactions = () => {
       description: transaction.descricao,
       amount: Number(transaction.valor).toFixed(2).replace('.', ','),
       type: transaction.tipo,
+      categoria_id: transaction.categoria_id || '',
       date: formattedDate,
       paga: transaction.paga
     });
@@ -85,6 +97,7 @@ const Transactions = () => {
       description: '',
       amount: '',
       type: 'entrada',
+      categoria_id: '',
       date: '',
       paga: false
     });
@@ -129,9 +142,23 @@ const Transactions = () => {
     }
   };
 
-  const filteredTransactions = transactions.filter(t => 
-    t.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Change category select when Type changes so we don't save an invalid category
+  useEffect(() => {
+    setValue('categoria_id', '');
+  }, [watchType, setValue]);
+
+  const filteredTransactions = transactions.filter(t => {
+    const textMatch = t.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let monthMatch = true;
+    if (filterMonth) {
+      const tDate = new Date(t.data || t.createdAt);
+      const tMonthYear = `${tDate.getUTCFullYear()}-${String(tDate.getUTCMonth() + 1).padStart(2, '0')}`;
+      monthMatch = tMonthYear === filterMonth;
+    }
+    
+    return textMatch && monthMatch;
+  });
 
   return (
     <div>
@@ -149,7 +176,16 @@ const Transactions = () => {
           <div className="card">
             <div className="card-header">
               <h3 className="card-title mt-1">Lista de Transações</h3>
-              <div className="card-tools">
+              <div className="card-tools d-flex">
+                <div className="input-group input-group-sm mr-2" style={{ width: '150px' }}>
+                  <input 
+                    type="month" 
+                    className="form-control float-right" 
+                    value={filterMonth}
+                    onChange={(e) => setFilterMonth(e.target.value)}
+                    title="Filtrar por Mês"
+                  />
+                </div>
                 <div className="input-group input-group-sm" style={{ width: '200px' }}>
                   <input 
                     type="text" 
@@ -180,7 +216,10 @@ const Transactions = () => {
                 <tbody>
                   {filteredTransactions.map(t => (
                     <tr key={t.id}>
-                      <td>{t.descricao}</td>
+                      <td>
+                        <div className="font-weight-bold">{t.descricao}</div>
+                        {t.categoriaData && <span className="badge badge-light text-muted mt-1"><i className="fas fa-tag mr-1 text-info"></i>{t.categoriaData.nome}</span>}
+                      </td>
                       <td className={t.tipo === 'entrada' ? 'text-success' : 'text-danger'}>
                         R$ {Number(t.valor).toFixed(2)}
                       </td>
@@ -203,7 +242,7 @@ const Transactions = () => {
                           </div>
                         )}
                       </td>
-                      <td>{new Date(t.data || t.createdAt).toLocaleDateString()}</td>
+                      <td>{new Date(t.data || t.createdAt).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                       <td>
                          <button className="btn btn-sm btn-info mr-2" onClick={() => handleEdit(t)}>
                            <i className="fas fa-edit"></i>
@@ -256,6 +295,15 @@ const Transactions = () => {
                     <select className="form-control" {...register('type', { required: true })}>
                       <option value="entrada">Entrada</option>
                       <option value="saida">Saída</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Categoria</label>
+                    <select className="form-control" {...register('categoria_id')}>
+                      <option value="">-- Nenhuma Categoria --</option>
+                      {categories.filter(c => c.tipo === watchType).map(c => (
+                        <option key={c.id} value={c.id}>{c.nome}</option>
+                      ))}
                     </select>
                   </div>
                   {watchType === 'saida' && (

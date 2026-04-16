@@ -23,6 +23,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  role: {
+    type: DataTypes.ENUM('admin', 'user'),
+    defaultValue: 'user',
+    allowNull: false,
+  },
 }, {
   tableName: 'users',
   timestamps: true, // Cria colunas createdAt e updatedAt automaticamente

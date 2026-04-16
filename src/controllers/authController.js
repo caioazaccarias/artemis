@@ -9,38 +9,6 @@ const generateToken = (params = {}) => {
   });
 };
 
-exports.register = async (req, res) => {
-  try {
-    const { nome, email, senha } = req.body;
-
-    // Verifica se o usuário já existe
-    const userExists = await User.findOne({ where: { email } });
-    if (userExists) {
-      return res.status(400).json({ error: 'Usuário já existe' });
-    }
-
-    // Aplica hash na senha antes de salvar
-    const salt = await bcrypt.genSalt(10);
-    const hashSenha = await bcrypt.hash(senha, salt);
-
-    // Cria o usuário no banco
-    const user = await User.create({
-      nome,
-      email,
-      senha: hashSenha,
-    });
-
-    // Remove a senha do retorno por segurança
-    user.senha = undefined;
-
-    return res.status(201).json({
-      user,
-      token: generateToken({ id: user.id }),
-    });
-  } catch (err) {
-    return res.status(400).json({ error: 'Falha no registro', details: err.message });
-  }
-};
 
 exports.login = async (req, res) => {
   try {
@@ -63,7 +31,7 @@ exports.login = async (req, res) => {
 
     return res.json({
       user,
-      token: generateToken({ id: user.id }),
+      token: generateToken({ id: user.id, role: user.role }),
     });
   } catch (err) {
     return res.status(400).json({ error: 'Falha no login', details: err.message });

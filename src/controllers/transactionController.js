@@ -1,15 +1,16 @@
-const { Transaction } = require('../models');
+const { Transaction, Category } = require('../models');
 
 // Cria uma nova transação
 exports.create = async (req, res) => {
   try {
-    const { tipo, valor, categoria, data, descricao, paga } = req.body;
+    const { tipo, valor, categoria, categoria_id, data, descricao, paga } = req.body;
     
     const transaction = await Transaction.create({
       user_id: req.userId, // Obtido pelo middleware de autenticação
       tipo,
       valor,
       categoria,
+      categoria_id: categoria_id || null,
       data,
       descricao,
       paga: tipo === 'saida' ? !!paga : false
@@ -26,6 +27,11 @@ exports.list = async (req, res) => {
   try {
     const transactions = await Transaction.findAll({
       where: { user_id: req.userId },
+      include: [{
+        model: Category,
+        as: 'categoriaData',
+        attributes: ['id', 'nome', 'tipo']
+      }],
       order: [['data', 'DESC'], ['id', 'DESC']]
     });
 
@@ -39,7 +45,7 @@ exports.list = async (req, res) => {
   exports.update = async (req, res) => {
     try {
       const { id } = req.params;
-      const { tipo, valor, categoria, data, descricao, paga } = req.body;
+      const { tipo, valor, categoria, categoria_id, data, descricao, paga } = req.body;
   
       const transaction = await Transaction.findOne({ where: { id, user_id: req.userId } });
   
@@ -51,6 +57,7 @@ exports.list = async (req, res) => {
         tipo: tipo !== undefined ? tipo : transaction.tipo,
         valor: valor !== undefined ? valor : transaction.valor,
         categoria: categoria !== undefined ? categoria : transaction.categoria,
+        categoria_id: categoria_id !== undefined ? (categoria_id || null) : transaction.categoria_id,
         data: data !== undefined ? data : transaction.data,
         descricao: descricao !== undefined ? descricao : transaction.descricao,
         paga: paga !== undefined ? !!paga : transaction.paga
