@@ -83,14 +83,15 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
       };
 
       if (editingData) {
-        await api.put(`/transactions/${editingData.id}`, payload);
+        const res = await api.put(`/transactions/${editingData.id}`, payload);
         Swal.fire('Sucesso!', 'Transação atualizada com sucesso.', 'success');
+        onSuccess(res.data);
       } else {
-        await api.post('/transactions', payload);
+        const res = await api.post('/transactions', payload);
         Swal.fire('Sucesso!', 'Transação cadastrada com sucesso.', 'success');
+        onSuccess(res.data);
       }
       
-      onSuccess();
       onClose();
     } catch (error) {
       Swal.fire('Erro!', 'Erro ao salvar transação.', 'error');

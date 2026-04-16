@@ -38,12 +38,23 @@ const Dashboard = () => {
     }
   };
 
+  const handleTransactionSuccess = (newTransaction) => {
+    if (newTransaction && newTransaction.data) {
+      // Ajusta o filtro para o mês da transação recém salva
+      const tDate = new Date(newTransaction.data);
+      const tMonthYear = `${tDate.getUTCFullYear()}-${String(tDate.getUTCMonth() + 1).padStart(2, '0')}`;
+      setFilterMonth(tMonthYear);
+    }
+    loadData();
+  };
+
   useEffect(() => {
     loadData();
   }, []);
 
   // Filtrar transações pelo mês selecionado e calcular resumo
   const filteredData = Array.isArray(transactions) ? transactions.filter(t => {
+    if (!filterMonth) return true; // Mostra tudo se o filtro estiver limpo
     const tDate = new Date(t.data || t.createdAt);
     const tMonthYear = `${tDate.getUTCFullYear()}-${String(tDate.getUTCMonth() + 1).padStart(2, '0')}`;
     return tMonthYear === filterMonth;
@@ -129,13 +140,21 @@ const Dashboard = () => {
               <i className="fas fa-plus mr-2"></i> Nova Transação
             </button>
             <span className="mr-2 text-muted font-weight-bold">Período:</span>
-            <input 
-              type="month" 
-              className="form-control" 
-              style={{ width: '180px' }}
-              value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
-            />
+            <div className="input-group" style={{ width: '210px' }}>
+              <input 
+                type="month" 
+                className="form-control" 
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+              />
+              {filterMonth && (
+                <div className="input-group-append">
+                  <button className="btn btn-outline-secondary" onClick={() => setFilterMonth('')} title="Limpar Filtro">
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -287,7 +306,7 @@ const Dashboard = () => {
       <TransactionModal 
         show={showModal} 
         onClose={() => setShowModal(false)} 
-        onSuccess={loadData}
+        onSuccess={handleTransactionSuccess}
       />
     </div>
   );

@@ -29,6 +29,16 @@ const Transactions = () => {
     }
   };
 
+  const handleTransactionSuccess = (newTransaction) => {
+    if (newTransaction && newTransaction.data) {
+      // Ajusta o filtro para o mês da transação recém salva
+      const tDate = new Date(newTransaction.data);
+      const tMonthYear = `${tDate.getUTCFullYear()}-${String(tDate.getUTCMonth() + 1).padStart(2, '0')}`;
+      setFilterMonth(tMonthYear);
+    }
+    loadTransactions();
+  };
+
   useEffect(() => {
     loadTransactions();
   }, []);
@@ -111,14 +121,21 @@ const Transactions = () => {
             <div className="card-header border-bottom-0">
               <h3 className="card-title font-weight-bold mt-1">Lista de Transações</h3>
               <div className="card-tools d-flex">
-                <div className="input-group input-group-sm mr-2" style={{ width: '150px' }}>
+                <div className="input-group input-group-sm mr-2" style={{ width: '180px' }}>
                   <input 
                     type="month" 
-                    className="form-control float-right" 
+                    className="form-control" 
                     value={filterMonth}
                     onChange={(e) => setFilterMonth(e.target.value)}
                     title="Filtrar por Mês"
                   />
+                  {filterMonth && (
+                    <div className="input-group-append">
+                      <button className="btn btn-outline-secondary" onClick={() => setFilterMonth('')} title="Limpar Filtro de Mês">
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="input-group input-group-sm" style={{ width: '220px' }}>
                   <input 
@@ -207,7 +224,7 @@ const Transactions = () => {
       <TransactionModal 
         show={showModal} 
         onClose={() => setShowModal(false)} 
-        onSuccess={loadTransactions}
+        onSuccess={handleTransactionSuccess}
         editingData={editingTransaction}
       />
     </div>
