@@ -41,6 +41,10 @@ const Transaction = sequelize.define('Transaction', {
     allowNull: false,
     defaultValue: false,
   },
+  observacao: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: 'transactions',
   timestamps: true,

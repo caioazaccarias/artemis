@@ -1,10 +1,15 @@
-const { User, Transaction } = require('../models');
+const { User, Transaction, Role } = require('../models');
 const bcrypt = require('bcryptjs');
 
 exports.index = async (req, res) => {
   try {
     const users = await User.findAll({
       attributes: { exclude: ['senha'] },
+      include: [{
+        model: Role,
+        as: 'roleData',
+        attributes: ['id', 'nome']
+      }],
       order: [['createdAt', 'DESC']]
     });
     return res.json(users);
@@ -15,7 +20,7 @@ exports.index = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { nome, email, senha, role } = req.body;
+    const { nome, email, senha, role, role_id } = req.body;
 
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
@@ -29,7 +34,8 @@ exports.create = async (req, res) => {
       nome,
       email,
       senha: hashSenha,
-      role: role || 'user'
+      role: role || 'user',
+      role_id: role_id || null
     });
 
     user.senha = undefined;
@@ -43,7 +49,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nome, email, senha, role } = req.body;
+    const { nome, email, senha, role, role_id } = req.body;
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -59,7 +65,7 @@ exports.update = async (req, res) => {
 
     // Se admin tentar editar a si mesmo e mudar para 'user', podemos proibir caso seja o unico admin, mas simplificaremos por agora
     
-    let updateData = { nome, email, role };
+    let updateData = { nome, email, role, role_id };
 
     if (senha) {
       const salt = await bcrypt.genSalt(10);
@@ -68,7 +74,10 @@ exports.update = async (req, res) => {
 
     await user.update(updateData);
 
-    const userReturn = await User.findByPk(id, { attributes: { exclude: ['senha'] } });
+    const userReturn = await User.findByPk(id, { 
+      attributes: { exclude: ['senha'] },
+      include: [{ model: Role, as: 'roleData', attributes: ['id', 'nome'] }]
+    });
     return res.json(userReturn);
   } catch (err) {
     return res.status(400).json({ error: 'Falha ao atualizar usuário', details: err.message });

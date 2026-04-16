@@ -29,6 +29,7 @@ module.exports = (req, res, next) => {
     // Pendura o id e o role do usuário no request para os próximos middlewares/controllers usarem
     req.userId = decoded.id;
     req.userRole = decoded.role;
+    req.userPermissions = decoded.permissions || [];
     return next();
   });
 };

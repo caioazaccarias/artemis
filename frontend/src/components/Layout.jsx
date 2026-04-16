@@ -16,6 +16,7 @@ const Clock = () => {
 const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showOptions, setShowOptions] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -52,32 +53,69 @@ const Layout = () => {
           {/* Sidebar Menu */}
           <nav className="mt-2">
             <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-              <li className="nav-item">
-                <Link to="/" className="nav-link">
-                  <i className="nav-icon fas fa-tachometer-alt"></i>
-                  <p>Dashboard</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/transactions" className="nav-link">
-                  <i className="nav-icon fas fa-list"></i>
-                  <p>Transações</p>
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/categories" className="nav-link">
-                  <i className="nav-icon fas fa-tags"></i>
-                  <p>Categorias</p>
-                </Link>
-              </li>
-              {user?.role === 'admin' && (
+            <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+              {user?.permissions?.includes('dashboard') && (
                 <li className="nav-item">
-                  <Link to="/users" className="nav-link">
-                    <i className="nav-icon fas fa-users"></i>
-                    <p>Usuários</p>
+                  <Link to="/" className="nav-link">
+                    <i className="nav-icon fas fa-tachometer-alt"></i>
+                    <p>Dashboard</p>
                   </Link>
                 </li>
               )}
+              {user?.permissions?.includes('transactions') && (
+                <li className="nav-item">
+                  <Link to="/transactions" className="nav-link">
+                    <i className="nav-icon fas fa-list"></i>
+                    <p>Transações</p>
+                  </Link>
+                </li>
+              )}
+              {user?.permissions?.includes('categories') && (
+                <li className="nav-item">
+                  <Link to="/categories" className="nav-link">
+                    <i className="nav-icon fas fa-tags"></i>
+                    <p>Categorias</p>
+                  </Link>
+                </li>
+              )}
+              {(user?.permissions?.includes('backup') || user?.permissions?.includes('roles') || user?.permissions?.includes('users')) && (
+                <li className={`nav-item ${showOptions ? 'menu-open' : ''}`}>
+                  <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setShowOptions(!showOptions); }}>
+                    <i className="nav-icon fas fa-cogs"></i>
+                    <p>
+                      Opções
+                      <i className={`right fas fa-angle-left ${showOptions ? 'rotate-90' : ''}`} style={{ transition: 'transform 0.3s' }}></i>
+                    </p>
+                  </a>
+                  <ul className="nav nav-treeview" style={{ display: showOptions ? 'block' : 'none', paddingLeft: '15px' }}>
+                    {user?.permissions?.includes('users') && (
+                      <li className="nav-item">
+                        <Link to="/users" className="nav-link">
+                          <i className="nav-icon fas fa-users"></i>
+                          <p>Usuários</p>
+                        </Link>
+                      </li>
+                    )}
+                    {user?.permissions?.includes('backup') && (
+                      <li className="nav-item">
+                        <Link to="/backup" className="nav-link">
+                          <i className="fas fa-database nav-icon text-info"></i>
+                          <p>Backup</p>
+                        </Link>
+                      </li>
+                    )}
+                    {user?.permissions?.includes('roles') && (
+                      <li className="nav-item">
+                        <Link to="/roles" className="nav-link">
+                          <i className="nav-icon fas fa-user-tag"></i>
+                          <p>Perfis</p>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </li>
+              )}
+            </ul>
             </ul>
           </nav>
         </div>

@@ -23,7 +23,7 @@ exports.create = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const categories = await Category.findAll({
-      where: { user_id: req.userId },
+      where: { }, // Removido filtro de user_id por regra de dados compartilhados
       order: [['nome', 'ASC']]
     });
 
@@ -38,7 +38,7 @@ exports.update = async (req, res) => {
     const { id } = req.params;
     const { nome, tipo } = req.body;
 
-    const category = await Category.findOne({ where: { id, user_id: req.userId } });
+    const category = await Category.findOne({ where: { id } });
 
     if (!category) {
       return res.status(404).json({ error: 'Categoria não encontrada ou você não tem permissão.' });
@@ -59,7 +59,7 @@ exports.remove = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const category = await Category.findOne({ where: { id, user_id: req.userId } });
+    const category = await Category.findOne({ where: { id } });
 
     if (!category) {
       return res.status(404).json({ error: 'Categoria não encontrada.' });

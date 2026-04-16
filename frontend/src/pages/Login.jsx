@@ -11,7 +11,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.senha);
       navigate('/');
     } catch (error) {
       console.error(error);
@@ -46,9 +46,9 @@ const Login = () => {
               <div className="input-group mb-3">
                 <input 
                   type="password" 
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`} 
+                  className={`form-control ${errors.senha ? 'is-invalid' : ''}`} 
                   placeholder="Senha" 
-                  {...register('password', { required: 'Senha é obrigatória' })} 
+                  {...register('senha', { required: 'Senha é obrigatória' })} 
                 />
                 <div className="input-group-append">
                   <div className="input-group-text">

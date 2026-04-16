@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,8 +22,18 @@ const Users = () => {
     }
   };
 
+  const loadRoles = async () => {
+    try {
+      const response = await api.get('/roles');
+      setRoles(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     loadUsers();
+    loadRoles();
   }, []);
 
   const onSubmit = async (data) => {
@@ -30,7 +41,8 @@ const Users = () => {
       const payload = {
         nome: data.nome,
         email: data.email,
-        role: data.role
+        role: data.role,
+        role_id: data.role_id
       };
 
       if (data.senha) {
@@ -60,6 +72,7 @@ const Users = () => {
       nome: user.nome,
       email: user.email,
       role: user.role,
+      role_id: user.role_id || '',
       senha: '' // só para criar ou sobrescrever
     });
     setShowModal(true);
@@ -71,6 +84,7 @@ const Users = () => {
       nome: '',
       email: '',
       role: 'user',
+      role_id: '',
       senha: ''
     });
     setShowModal(true);
@@ -154,7 +168,7 @@ const Users = () => {
                       <td className="align-middle text-muted">{u.email}</td>
                       <td className="align-middle">
                         <span className={`badge px-3 py-2 text-uppercase font-weight-bold ${u.role === 'admin' ? 'badge-primary' : 'badge-secondary'}`}>
-                          {u.role === 'admin' ? 'Admin' : 'Usuário'}
+                          {u.roleData?.nome || (u.role === 'admin' ? 'Admin' : 'Usuário')}
                         </span>
                       </td>
                       <td className="align-middle">
@@ -219,10 +233,14 @@ const Users = () => {
                   <div className="form-row">
                     <div className="form-group col-md-6 mb-4">
                       <label className="text-muted mb-1 text-sm">Nível de Acesso (Perfil)</label>
-                      <select className="form-control" {...register('role')}>
-                        <option value="user">Usuário Básico</option>
-                        <option value="admin">Administrador</option>
+                      <select className="form-control" {...register('role_id')}>
+                        <option value="">-- Selecione um Perfil --</option>
+                        {roles.map(r => (
+                          <option key={r.id} value={r.id}>{r.nome}</option>
+                        ))}
                       </select>
+                      {/* Manter campo role oculto para compatibilidade se necessário, ou remover */}
+                      <input type="hidden" {...register('role')} />
                     </div>
                     
                     <div className="form-group col-md-6 mb-4">

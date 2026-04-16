@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middlewares/authMiddleware');
-const adminMiddleware = require('../middlewares/adminMiddleware');
+const permissionMiddleware = require('../middlewares/permissionMiddleware');
 
-// Todas as rotas de usuários devem passar pelo authMiddleware e depois adminMiddleware
+// Todas as rotas de usuários devem passar pelo authMiddleware e depois permissionMiddleware
 router.use(authMiddleware);
-router.use(adminMiddleware);
+router.use(permissionMiddleware('users'));
 
 router.get('/', userController.index);
 router.post('/', userController.create);

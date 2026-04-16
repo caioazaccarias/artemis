@@ -12,7 +12,7 @@ Este documento apresenta uma visão geral do sistema de Controle Financeiro, inc
 
 ## 💼 Regras de Negócios
 
-- **Isolamento de Dados:** Cada usuário só tem acesso às próprias transações. As operações de consulta, criação, edição e exclusão de transações são atreladas ao `user_id` do usuário logado de forma isolada.
+- **Dados Compartilhados:** Embora o sistema suporte múltiplos usuários para autenticação, todas as transações e categorias são compartilhadas globalmente. As operações de consulta, criação, edição e exclusão refletem para todos os usuários da plataforma.
 - **Tipos de Transação:** Uma transação é estritamente classificada como `entrada` (receita) ou `saida` (despesa).
 - **Status de Pagamento:** As transações possuem um status `paga` (booleano), permitindo gerenciar o fluxo de caixa considerando o que é apenas previsão e o que já foi consolidado/pago.
 - **Validação de Usuário:** O e-mail de um usuário deve ser único no sistema e é utilizado para a autenticação.

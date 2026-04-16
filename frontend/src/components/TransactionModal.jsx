@@ -34,7 +34,8 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
           type: editingData.tipo,
           categoria_id: editingData.categoria_id || '',
           date: formattedDate,
-          paga: editingData.paga
+          paga: editingData.paga,
+          observacao: editingData.observacao || ''
         });
       } else {
         reset({
@@ -43,7 +44,8 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
           type: 'entrada',
           categoria_id: '',
           date: new Date().toISOString().split('T')[0],
-          paga: false
+          paga: false,
+          observacao: ''
         });
       }
     }
@@ -63,12 +65,13 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
       }
 
       const payload = {
-        descricao: data.description,
+        descricao: data.description ? data.description.toUpperCase() : '',
         valor: Number(parsedAmount),
         tipo: data.type,
         categoria_id: data.categoria_id || null,
         data: data.date,
-        paga: data.paga
+        paga: data.paga,
+        observacao: data.observacao
       };
 
       if (editingData) {
@@ -105,15 +108,27 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
             <div className="modal-body">
               <div className="form-group">
                 <label>Descrição</label>
-                <input type="text" className="form-control" placeholder="Ex: Mercado, Aluguel..." {...register('description', { required: true })} />
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="Ex: MERCADO, ALUGUEL..." 
+                  {...register('description', { required: true })} 
+                  style={{ textTransform: 'uppercase' }}
+                />
               </div>
-              <div className="form-group">
-                <label>Valor (R$)</label>
-                <input type="text" placeholder="Ex: 1.500,50" className="form-control" {...register('amount', { required: true })} />
-              </div>
-              <div className="form-group">
-                <label>Data</label>
-                <input type="date" className="form-control" {...register('date', { required: true })} />
+              <div className="row">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="text" placeholder="Ex: 1.500,50" className="form-control" {...register('amount', { required: true })} />
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>Data</label>
+                    <input type="date" className="form-control" {...register('date', { required: true })} />
+                  </div>
+                </div>
               </div>
               <div className="form-group">
                 <label>Tipo</label>
@@ -130,6 +145,15 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
                     <option key={c.id} value={c.id}>{c.nome}</option>
                   ))}
                 </select>
+              </div>
+              <div className="form-group">
+                <label>Observação</label>
+                <textarea 
+                  className="form-control" 
+                  rows="3" 
+                  placeholder="Deseja adicionar algum detalhe?"
+                  {...register('observacao')}
+                ></textarea>
               </div>
               {watchType === 'saida' && (
                 <div className="form-group custom-control custom-switch ml-1">

@@ -3,7 +3,7 @@ const { Transaction, Category } = require('../models');
 // Cria uma nova transação
 exports.create = async (req, res) => {
   try {
-    const { tipo, valor, categoria, categoria_id, data, descricao, paga } = req.body;
+    const { tipo, valor, categoria, categoria_id, data, descricao, paga, observacao } = req.body;
     
     const transaction = await Transaction.create({
       user_id: req.userId, // Obtido pelo middleware de autenticação
@@ -13,7 +13,8 @@ exports.create = async (req, res) => {
       categoria_id: categoria_id || null,
       data,
       descricao,
-      paga: tipo === 'saida' ? !!paga : false
+      paga: tipo === 'saida' ? !!paga : false,
+      observacao
     });
 
     return res.status(201).json(transaction);
@@ -26,7 +27,7 @@ exports.create = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const transactions = await Transaction.findAll({
-      where: { user_id: req.userId },
+      where: { }, // Removido filtro de user_id por regra de dados compartilhados
       include: [{
         model: Category,
         as: 'categoriaData',
@@ -45,9 +46,9 @@ exports.list = async (req, res) => {
   exports.update = async (req, res) => {
     try {
       const { id } = req.params;
-      const { tipo, valor, categoria, categoria_id, data, descricao, paga } = req.body;
+      const { tipo, valor, categoria, categoria_id, data, descricao, paga, observacao } = req.body;
   
-      const transaction = await Transaction.findOne({ where: { id, user_id: req.userId } });
+      const transaction = await Transaction.findOne({ where: { id } });
   
       if (!transaction) {
         return res.status(404).json({ error: 'Transação não encontrada ou você não tem permissão.' });
@@ -60,7 +61,8 @@ exports.list = async (req, res) => {
         categoria_id: categoria_id !== undefined ? (categoria_id || null) : transaction.categoria_id,
         data: data !== undefined ? data : transaction.data,
         descricao: descricao !== undefined ? descricao : transaction.descricao,
-        paga: paga !== undefined ? !!paga : transaction.paga
+        paga: paga !== undefined ? !!paga : transaction.paga,
+        observacao: observacao !== undefined ? observacao : transaction.observacao
       });
   
       return res.json(transaction);
@@ -74,7 +76,7 @@ exports.remove = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const transaction = await Transaction.findOne({ where: { id, user_id: req.userId } });
+    const transaction = await Transaction.findOne({ where: { id } });
 
     if (!transaction) {
       return res.status(404).json({ error: 'Transação não encontrada ou você não tem permissão.' });
@@ -92,7 +94,7 @@ exports.remove = async (req, res) => {
 exports.summary = async (req, res) => {
   try {
     const transactions = await Transaction.findAll({
-      where: { user_id: req.userId }
+      where: { } // Removido filtro de user_id por regra de dados compartilhados
     });
 
     let totalEntradas = 0;

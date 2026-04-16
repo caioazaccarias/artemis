@@ -25,13 +25,15 @@ export const AuthProvider = ({ children }) => {
       // Or adjust according to the backend
       const response = await api.post('/auth/login', { email, senha: password });
       
-      const { token, user } = response.data;
+      const { token, user, permissions } = response.data;
       
-      localStorage.setItem('@ControleFinanceiro:user', JSON.stringify(user));
+      const userWithPermissions = { ...user, permissions };
+      
+      localStorage.setItem('@ControleFinanceiro:user', JSON.stringify(userWithPermissions));
       localStorage.setItem('@ControleFinanceiro:token', token);
       
       api.defaults.headers.Authorization = `Bearer ${token}`;
-      setUser(user);
+      setUser(userWithPermissions);
     } catch (error) {
       Swal.fire('Erro!', 'Credenciais inválidas.', 'error');
       throw error;

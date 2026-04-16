@@ -23,10 +23,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  role: {
-    type: DataTypes.ENUM('admin', 'user'),
+  role_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  role: { // Mantém a coluna antiga temporarily, pois Sequelize pode dar problema para apagar enum caso não suportado
+    type: DataTypes.STRING,
     defaultValue: 'user',
-    allowNull: false,
+    allowNull: true,
   },
 }, {
   tableName: 'users',

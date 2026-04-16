@@ -10,6 +10,8 @@ import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Users from './pages/Users';
 import Categories from './pages/Categories';
+import Backup from './pages/Backup';
+import Roles from './pages/Roles';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/users" element={<Users />} />
               <Route path="/categories" element={<Categories />} />
+              <Route path="/backup" element={<Backup />} />
+              <Route path="/roles" element={<Roles />} />
             </Route>
           </Route>
           

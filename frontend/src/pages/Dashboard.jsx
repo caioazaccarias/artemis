@@ -7,7 +7,9 @@ import TransactionModal from '../components/TransactionModal';
 const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showValues, setShowValues] = useState(false);
+  const [showValues, setShowValues] = useState(() => {
+    return localStorage.getItem('showDashboardValues') === 'true';
+  });
   const [chartView, setChartView] = useState('tipo'); // 'tipo' ou 'categoria'
   const [showModal, setShowModal] = useState(false);
 
@@ -110,7 +112,11 @@ const Dashboard = () => {
           <h1 className="m-0">
             Dashboard
             <button
-              onClick={() => setShowValues(!showValues)}
+              onClick={() => {
+                const newValue = !showValues;
+                setShowValues(newValue);
+                localStorage.setItem('showDashboardValues', newValue);
+              }}
               style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
               className="ml-3 text-secondary"
               title={showValues ? "Ocultar Valores" : "Exibir Valores"}
