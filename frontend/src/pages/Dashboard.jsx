@@ -2,18 +2,27 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Swal from 'sweetalert2';
+import TransactionModal from '../components/TransactionModal';
 
 const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showValues, setShowValues] = useState(false);
   const [chartView, setChartView] = useState('tipo'); // 'tipo' ou 'categoria'
+  const [showModal, setShowModal] = useState(false);
 
   const currentDate = new Date();
   const currentMonthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
   const [filterMonth, setFilterMonth] = useState(currentMonthYear);
 
   const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#d0ed57', '#a4de6c'];
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(val);
+  };
 
   const loadData = async () => {
     try {
@@ -40,12 +49,16 @@ const Dashboard = () => {
 
   const totals = filteredData.reduce((acc, t) => {
     const val = parseFloat(t.valor);
-    if (t.tipo === 'entrada') acc.totalEntradas += val;
-    else acc.totalSaidas += val;
+    if (t.tipo === 'entrada') {
+      acc.totalEntradas += val;
+    } else {
+      acc.totalSaidas += val;
+      if (t.paga) acc.totalSaidasPagas += val;
+    }
     return acc;
-  }, { totalEntradas: 0, totalSaidas: 0 });
+  }, { totalEntradas: 0, totalSaidas: 0, totalSaidasPagas: 0 });
 
-  const saldo = totals.totalEntradas - totals.totalSaidas;
+  const saldo = totals.totalEntradas - totals.totalSaidasPagas;
 
   const upcomingBills = Array.isArray(transactions) ? transactions
     .filter(t => t.tipo === 'saida' && !t.paga)
@@ -106,6 +119,9 @@ const Dashboard = () => {
             </button>
           </h1>
           <div className="d-flex align-items-center mt-2 mt-md-0">
+            <button className="btn btn-primary shadow-sm font-weight-bold mr-4" onClick={() => setShowModal(true)}>
+              <i className="fas fa-plus mr-2"></i> Nova Transação
+            </button>
             <span className="mr-2 text-muted font-weight-bold">Período:</span>
             <input 
               type="month" 
@@ -124,7 +140,7 @@ const Dashboard = () => {
             <div className="col-lg-4 col-md-6 col-12 mb-3">
               <div className="small-box bg-success shadow-sm">
                 <div className="inner">
-                  <h3>{showValues ? `R$ ${totals.totalEntradas.toFixed(2).replace('.', ',')}` : 'R$ ****'}</h3>
+                  <h3>{showValues ? `R$ ${formatCurrency(totals.totalEntradas)}` : 'R$ ****'}</h3>
                   <p>Entradas (Mês)</p>
                 </div>
                 <div className="icon">
@@ -136,7 +152,7 @@ const Dashboard = () => {
             <div className="col-lg-4 col-md-6 col-12 mb-3">
               <div className="small-box bg-danger shadow-sm">
                 <div className="inner">
-                  <h3>{showValues ? `R$ ${totals.totalSaidas.toFixed(2).replace('.', ',')}` : 'R$ ****'}</h3>
+                  <h3>{showValues ? `R$ ${formatCurrency(totals.totalSaidas)}` : 'R$ ****'}</h3>
                   <p>Saídas (Mês)</p>
                 </div>
                 <div className="icon">
@@ -148,7 +164,7 @@ const Dashboard = () => {
             <div className="col-lg-4 col-md-12 col-12 mb-3">
               <div className={`small-box shadow-sm ${saldo >= 0 ? 'bg-info' : 'bg-warning'}`}>
                 <div className="inner">
-                  <h3>{showValues ? `R$ ${saldo.toFixed(2).replace('.', ',')}` : 'R$ ****'}</h3>
+                  <h3>{showValues ? `R$ ${formatCurrency(saldo)}` : 'R$ ****'}</h3>
                   <p>Saldo (Mês)</p>
                 </div>
                 <div className="icon">
@@ -199,7 +215,7 @@ const Dashboard = () => {
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value) => showValues ? `R$ ${value.toFixed(2).replace('.', ',')}` : 'R$ ****'} />
+                          <Tooltip formatter={(value) => showValues ? `R$ ${formatCurrency(value)}` : 'R$ ****'} />
                           <Legend />
                         </PieChart>
                       </ResponsiveContainer>
@@ -235,7 +251,7 @@ const Dashboard = () => {
                         </div>
                         <div className="d-flex align-items-center">
                           <span className="badge badge-danger text-sm mr-2 p-2">
-                            {showValues ? `R$ ${Number(bill.valor).toFixed(2).replace('.', ',')}` : 'R$ ****'}
+                            {showValues ? `R$ ${formatCurrency(bill.valor)}` : 'R$ ****'}
                           </span>
                           <button 
                             className="btn btn-sm btn-outline-success border-2" 
@@ -261,6 +277,12 @@ const Dashboard = () => {
           </div>
         </div>
       </section>
+
+      <TransactionModal 
+        show={showModal} 
+        onClose={() => setShowModal(false)} 
+        onSuccess={loadData}
+      />
     </div>
   );
 };
