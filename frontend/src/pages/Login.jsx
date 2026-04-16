@@ -21,8 +21,8 @@ const Login = () => {
   return (
     <div className="login-page" style={{ height: '100vh' }}>
       <div className="login-box">
-        <div className="login-logo">
-          <b>Controle</b>Financeiro
+        <div className="login-logo mb-4">
+          <img src="/logo.png" alt="Artemis Logo" style={{ maxWidth: '280px', height: 'auto' }} />
         </div>
         <div className="card">
           <div className="card-body login-card-body">

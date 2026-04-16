@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 
 const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
   const [categories, setCategories] = useState([]);
-  const { register, handleSubmit, reset, watch, setValue } = useForm();
+  const { register, handleSubmit, reset, watch, setValue, setFocus } = useForm();
   const watchType = watch('type');
 
   useEffect(() => {
@@ -50,6 +50,14 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
       }
     }
   }, [show, editingData, reset]);
+
+  useEffect(() => {
+    if (show) {
+      setTimeout(() => {
+        setFocus('description');
+      }, 100);
+    }
+  }, [show, setFocus]);
 
   useEffect(() => {
     if (show && !editingData) {
