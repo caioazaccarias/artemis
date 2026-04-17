@@ -182,3 +182,45 @@
     border-right-color: var(--border);
   }
 }
+
+/* --- Mobile Responsiveness Overrides --- */
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 0.5rem !important;
+  }
+
+  .table th, .table td {
+    padding: 0.5rem !important;
+    font-size: 0.85rem;
+  }
+
+  /* Garante que o modal não tenha overflow horizontal */
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  /* Ajustes para textos longos em tabelas */
+  .table td div.font-weight-bold {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Ajuste de legenda de gráficos no mobile */
+  .recharts-legend-wrapper {
+    bottom: -15px !important;
+  }
+
+  /* Badge menor no mobile */
+  .badge {
+    font-size: 75%;
+  }
+}
+
+/* Estilo para o switch customizado caber melhor no mobile */
+.custom-control-label::before, 
+.custom-control-label::after {
+  top: 0.15rem;
+}

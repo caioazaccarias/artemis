@@ -120,7 +120,7 @@ const Dashboard = () => {
     <div>
       <div className="content-header">
         <div className="container-fluid d-flex justify-content-between align-items-center flex-wrap">
-          <h1 className="m-0">
+          <h1 className="m-0 mb-2">
             Dashboard
             <button
               onClick={() => {
@@ -135,12 +135,11 @@ const Dashboard = () => {
               <i className={`fas ${showValues ? 'fa-eye-slash' : 'fa-eye'}`}></i>
             </button>
           </h1>
-          <div className="d-flex align-items-center mt-2 mt-md-0">
-            <button className="btn btn-primary shadow-sm font-weight-bold mr-4" onClick={() => setShowModal(true)}>
-              <i className="fas fa-plus mr-2"></i> Nova Transação
+          <div className="d-flex align-items-center mb-2">
+            <button className="btn btn-primary shadow-sm font-weight-bold mr-3" onClick={() => setShowModal(true)}>
+              <i className="fas fa-plus mr-2"></i> Nova
             </button>
-            <span className="mr-2 text-muted font-weight-bold">Período:</span>
-            <div className="input-group" style={{ width: '210px' }}>
+            <div className="input-group input-group-sm" style={{ width: '190px' }}>
               <input 
                 type="month" 
                 className="form-control" 
@@ -224,24 +223,24 @@ const Dashboard = () => {
                 <div className="card-body">
                   {dataChart.some(d => d.value > 0) ? (
                     <div style={{ width: '100%', height: 300 }}>
-                      <ResponsiveContainer>
-                        <PieChart>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                           <Pie
                             data={dataChart}
                             dataKey="value"
                             nameKey="name"
                             cx="50%"
                             cy="50%"
-                            outerRadius={100}
+                            outerRadius="80%"
                             fill="#8884d8"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            label={({ name, percent }) => percent > 0.1 ? `${name}` : ""}
                           >
                             {dataChart.map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
                           <Tooltip formatter={(value) => showValues ? `R$ ${formatCurrency(value)}` : 'R$ ****'} />
-                          <Legend />
+                          <Legend wrapperStyle={{ fontSize: '12px' }} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>

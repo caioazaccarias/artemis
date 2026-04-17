@@ -107,9 +107,9 @@ const Transactions = () => {
   return (
     <div>
       <div className="content-header">
-        <div className="container-fluid d-flex justify-content-between align-items-center">
-          <h1 className="m-0">Transações</h1>
-          <button className="btn btn-primary shadow-sm font-weight-bold" onClick={handleOpenNewModal}>
+        <div className="container-fluid d-flex justify-content-between align-items-center flex-wrap">
+          <h1 className="m-0 mr-3">Transações</h1>
+          <button className="btn btn-primary shadow-sm font-weight-bold mt-2 mt-sm-0" onClick={handleOpenNewModal}>
             <i className="fas fa-plus mr-2"></i> Nova Transação
           </button>
         </div>
@@ -120,8 +120,8 @@ const Transactions = () => {
           <div className="card shadow-sm">
             <div className="card-header border-bottom-0">
               <h3 className="card-title font-weight-bold mt-1">Lista de Transações</h3>
-              <div className="card-tools d-flex">
-                <div className="input-group input-group-sm mr-2" style={{ width: '180px' }}>
+              <div className="card-tools d-flex flex-wrap mt-2 mt-md-0">
+                <div className="input-group input-group-sm mr-2 mb-2 mb-md-0" style={{ width: '180px', minWidth: '150px' }}>
                   <input 
                     type="month" 
                     className="form-control" 
@@ -137,11 +137,11 @@ const Transactions = () => {
                     </div>
                   )}
                 </div>
-                <div className="input-group input-group-sm" style={{ width: '220px' }}>
+                <div className="input-group input-group-sm mb-2 mb-md-0" style={{ width: '220px', minWidth: '180px' }}>
                   <input 
                     type="text" 
-                    className="form-control float-right" 
-                    placeholder="Pesquisar descrição..." 
+                    className="form-control" 
+                    placeholder="Pesquisar..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />

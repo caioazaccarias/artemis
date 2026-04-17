@@ -23,6 +23,14 @@ const Layout = () => {
     navigate('/login');
   };
 
+  // Fecha o menu lateral automaticamente em dispositivos móveis após clicar em um link
+  const handleNavLinkClick = () => {
+    if (window.innerWidth <= 992) {
+      document.body.classList.remove('sidebar-open');
+      document.body.classList.add('sidebar-collapse');
+    }
+  };
+
   return (
     <div className="wrapper">
       {/* Navbar */}
@@ -67,7 +75,7 @@ const Layout = () => {
               <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
                 {user?.permissions?.includes('dashboard') && (
                   <li className="nav-item">
-                    <Link to="/" className="nav-link">
+                    <Link to="/" className="nav-link" onClick={handleNavLinkClick}>
                       <i className="nav-icon fas fa-tachometer-alt"></i>
                       <p>Dashboard</p>
                     </Link>
@@ -75,7 +83,7 @@ const Layout = () => {
                 )}
                 {user?.permissions?.includes('transactions') && (
                   <li className="nav-item">
-                    <Link to="/transactions" className="nav-link">
+                    <Link to="/transactions" className="nav-link" onClick={handleNavLinkClick}>
                       <i className="nav-icon fas fa-list"></i>
                       <p>Transações</p>
                     </Link>
@@ -83,7 +91,7 @@ const Layout = () => {
                 )}
                 {user?.permissions?.includes('categories') && (
                   <li className="nav-item">
-                    <Link to="/categories" className="nav-link">
+                    <Link to="/categories" className="nav-link" onClick={handleNavLinkClick}>
                       <i className="nav-icon fas fa-tags"></i>
                       <p>Categorias</p>
                     </Link>
@@ -101,7 +109,7 @@ const Layout = () => {
                     <ul className="nav nav-treeview" style={{ display: showOptions ? 'block' : 'none', paddingLeft: '15px' }}>
                       {user?.permissions?.includes('users') && (
                         <li className="nav-item">
-                          <Link to="/users" className="nav-link">
+                          <Link to="/users" className="nav-link" onClick={handleNavLinkClick}>
                             <i className="nav-icon fas fa-users"></i>
                             <p>Usuários</p>
                           </Link>
@@ -109,7 +117,7 @@ const Layout = () => {
                       )}
                       {user?.permissions?.includes('backup') && (
                         <li className="nav-item">
-                          <Link to="/backup" className="nav-link">
+                          <Link to="/backup" className="nav-link" onClick={handleNavLinkClick}>
                             <i className="fas fa-database nav-icon text-info"></i>
                             <p>Backup</p>
                           </Link>
@@ -117,7 +125,7 @@ const Layout = () => {
                       )}
                       {user?.permissions?.includes('roles') && (
                         <li className="nav-item">
-                          <Link to="/roles" className="nav-link">
+                          <Link to="/roles" className="nav-link" onClick={handleNavLinkClick}>
                             <i className="nav-icon fas fa-user-tag"></i>
                             <p>Perfis</p>
                           </Link>
@@ -133,11 +141,13 @@ const Layout = () => {
       </aside>
 
       {/* Content Wrapper */}
-      <div className="content-wrapper p-4">
-        <Outlet />
+      <div className="content-wrapper" style={{ padding: '1rem', minHeight: 'calc(100vh - 57px - 57px)' }}>
+        <div className="container-fluid">
+          <Outlet />
+        </div>
       </div>
 
-      <footer className="main-footer text-right">
+      <footer className="main-footer text-right py-2 px-3">
         <strong><Clock /></strong>
       </footer>
     </div>

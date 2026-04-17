@@ -126,13 +126,13 @@ const TransactionModal = ({ show, onClose, onSuccess, editingData = null }) => {
                 />
               </div>
               <div className="row">
-                <div className="col-md-6">
+                <div className="col-12 col-md-6">
                   <div className="form-group">
                     <label>Valor (R$)</label>
                     <input type="text" placeholder="Ex: 1.500,50" className="form-control" {...register('amount', { required: true })} />
                   </div>
                 </div>
-                <div className="col-md-6">
+                <div className="col-12 col-md-6">
                   <div className="form-group">
                     <label>Data</label>
                     <input type="date" className="form-control" {...register('date', { required: true })} />

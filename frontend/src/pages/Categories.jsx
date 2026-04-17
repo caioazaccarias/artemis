@@ -85,48 +85,59 @@ const Categories = () => {
 
   return (
     <div>
-      <div className="content-header">
+      <div className="content-header px-2">
         <div className="container-fluid d-flex justify-content-between align-items-center">
-          <h1 className="m-0">Categorias</h1>
-          <button className="btn btn-primary font-weight-bold shadow-sm" onClick={handleOpenNewModal}>
-            <i className="fas fa-tags mr-2"></i> Nova Categoria
+          <h1 className="m-0 text-dark font-weight-bold" style={{ fontSize: '1.8rem' }}>Categorias</h1>
+          <button className="btn btn-primary font-weight-bold shadow-sm d-flex align-items-center" onClick={handleOpenNewModal}>
+            <i className="fas fa-plus-circle mr-sm-2"></i> 
+            <span className="d-none d-sm-inline">Nova Categoria</span>
           </button>
         </div>
       </div>
 
-      <section className="content mt-3">
+      <section className="content mt-2">
         <div className="container-fluid">
-          <div className="card shadow-sm border-top border-info rounded">
-            <div className="card-header border-bottom-0 pb-0">
-              <h3 className="card-title mt-1 font-weight-bold text-secondary">
-                <i className="fas fa-list-ul mr-2 text-info"></i> Suas Categorias
+          <div className="card shadow-sm border-0 rounded-lg">
+            <div className="card-header bg-white border-bottom-0 pt-4 px-4">
+              <h3 className="card-title font-weight-bold text-muted">
+                <i className="fas fa-th-large mr-2 text-info"></i> Organização Financeira
               </h3>
             </div>
-            <div className="card-body mt-2">
-              <div className="row">
+            <div className="card-body p-3">
+              <div className="row mx-0">
                 {categories.length === 0 && (
-                  <div className="col-12 text-center text-muted p-5">
-                    <i className="fas fa-box-open mb-3" style={{ fontSize: '3rem' }}></i>
-                    <h5>Nenhuma categoria encontrada.</h5>
-                    <p>Comece organizando suas finanças criando categorias de entradas e saídas.</p>
+                  <div className="col-12 text-center text-muted py-5">
+                    <i className="fas fa-folder-open mb-3" style={{ fontSize: '3.5rem', opacity: 0.3 }}></i>
+                    <h5>Nenhuma categoria cadastrada</h5>
+                    <p>Crie categorias para classificar suas receitas e despesas.</p>
                   </div>
                 )}
                 {categories.map(c => (
-                  <div className="col-md-4 col-sm-6 col-12 mb-3" key={c.id}>
-                    <div className={`info-box shadow-sm border ${c.tipo === 'entrada' ? 'border-success' : 'border-danger'}`}>
-                      <span className={`info-box-icon text-white rounded-circle ml-3 mt-3 align-self-start ${c.tipo === 'entrada' ? 'bg-success' : 'bg-danger'}`} style={{ width: '45px', height: '45px', lineHeight: '45px', fontSize: '1.2rem' }}>
-                        <i className={`fas ${c.tipo === 'entrada' ? 'fa-arrow-up' : 'fa-arrow-down'}`}></i>
+                  <div className="col-xl-3 col-lg-4 col-md-6 col-12 px-2 mb-3" key={c.id}>
+                    <div className={`info-box shadow-none border rounded-lg h-100 mb-0 transition-all ${c.tipo === 'entrada' ? 'border-success-light' : 'border-danger-light'}`} 
+                         style={{ 
+                            minHeight: '85px', 
+                            borderLeft: `5px solid ${c.tipo === 'entrada' ? '#28a745' : '#dc3545'}`,
+                            transition: 'transform .2s ease-in-out'
+                         }}>
+                      <span className={`info-box-icon elevation-0 rounded-circle my-auto ml-2 ${c.tipo === 'entrada' ? 'bg-success' : 'bg-danger'}`} 
+                            style={{ width: '42px', height: '42px', minWidth: '42px' }}>
+                        <i className={`fas ${c.tipo === 'entrada' ? 'fa-arrow-up' : 'fa-arrow-down'}`} style={{ fontSize: '1rem' }}></i>
                       </span>
-                      <div className="info-box-content mt-2">
-                        <span className="info-box-text text-muted text-uppercase text-xs font-weight-bold">{c.tipo === 'entrada' ? 'Receita' : 'Despesa'}</span>
-                        <span className="info-box-number text-lg mb-0">{c.nome}</span>
+                      
+                      <div className="info-box-content py-2 pl-3 d-flex flex-column justify-content-center">
+                        <span className="info-box-text text-uppercase text-xs font-weight-bold opacity-70" style={{ color: c.tipo === 'entrada' ? '#28a745' : '#dc3545' }}>
+                          {c.tipo === 'entrada' ? 'Receita' : 'Despesa'}
+                        </span>
+                        <span className="info-box-number text-md font-weight-bold text-dark m-0 truncate">{c.nome}</span>
                       </div>
-                      <div className="align-self-center pr-3">
-                        <button className="btn btn-sm btn-light text-info rounded-circle mr-1" onClick={() => handleEdit(c)} title="Editar">
-                          <i className="fas fa-edit"></i>
+                      
+                      <div className="info-box-actions d-flex align-items-center pr-2 ml-auto">
+                        <button className="btn btn-xs btn-link text-muted p-2 hover-text-info" onClick={() => handleEdit(c)} title="Editar">
+                          <i className="fas fa-pencil-alt"></i>
                         </button>
-                        <button className="btn btn-sm btn-light text-danger rounded-circle" onClick={() => handleDelete(c.id)} title="Excluir">
-                          <i className="fas fa-trash"></i>
+                        <button className="btn btn-xs btn-link text-muted p-2 hover-text-danger" onClick={() => handleDelete(c.id)} title="Excluir">
+                          <i className="fas fa-trash-alt"></i>
                         </button>
                       </div>
                     </div>

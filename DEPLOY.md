@@ -73,6 +73,23 @@ docker compose logs -f backend
 
 ---
 
+## Teste Local com Docker (Opcional)
+
+Se você quiser testar se a orquestração está funcionando antes de subir para a VPS, utilize o comando:
+
+```bash
+docker compose up --build
+```
+
+Neste modo local:
+1. O **Banco de Dados** rodará na porta `3306`.
+2. O **Backend** rodará na porta `3000`.
+3. O **Frontend** rodará na porta `8081` (acesso via `http://localhost:8081`).
+
+Isso simula exatamente como os containers conversarão entre si na VPS.
+
+---
+
 ## Comandos Úteis
 
 | Ação | Comando |
