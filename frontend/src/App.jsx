@@ -12,6 +12,8 @@ import Users from './pages/Users';
 import Categories from './pages/Categories';
 import Backup from './pages/Backup';
 import Roles from './pages/Roles';
+import Commissions from './pages/Commissions';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
               <Route path="/categories" element={<Categories />} />
               <Route path="/backup" element={<Backup />} />
               <Route path="/roles" element={<Roles />} />
+              <Route path="/commissions" element={<Commissions />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>
           

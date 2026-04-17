@@ -8,6 +8,8 @@ const userRoutes = require('./src/routes/userRoutes');
 const categoryRoutes = require('./src/routes/categoryRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
 const roleRoutes = require('./src/routes/roleRoutes');
+const commissionRoutes = require('./src/routes/commissionRoutes');
+const settingRoutes = require('./src/routes/settingRoutes');
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/commissions', commissionRoutes);
+app.use('/api/settings', settingRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {

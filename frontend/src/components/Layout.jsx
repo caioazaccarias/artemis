@@ -72,41 +72,56 @@ const Layout = () => {
           {/* Sidebar Menu */}
           <nav className="mt-2">
             <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-              <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                {user?.permissions?.includes('dashboard') && (
-                  <li className="nav-item">
-                    <Link to="/" className="nav-link" onClick={handleNavLinkClick}>
-                      <i className="nav-icon fas fa-tachometer-alt"></i>
-                      <p>Dashboard</p>
-                    </Link>
-                  </li>
-                )}
-                {user?.permissions?.includes('transactions') && (
-                  <li className="nav-item">
-                    <Link to="/transactions" className="nav-link" onClick={handleNavLinkClick}>
-                      <i className="nav-icon fas fa-list"></i>
-                      <p>Transações</p>
-                    </Link>
-                  </li>
-                )}
-                {user?.permissions?.includes('categories') && (
-                  <li className="nav-item">
-                    <Link to="/categories" className="nav-link" onClick={handleNavLinkClick}>
-                      <i className="nav-icon fas fa-tags"></i>
-                      <p>Categorias</p>
-                    </Link>
-                  </li>
-                )}
-                {(user?.permissions?.includes('backup') || user?.permissions?.includes('roles') || user?.permissions?.includes('users')) && (
-                  <li className={`nav-item ${showOptions ? 'menu-open' : ''}`}>
-                    <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setShowOptions(!showOptions); }}>
-                      <i className="nav-icon fas fa-cogs"></i>
-                      <p>
-                        Opções
-                        <i className={`right fas fa-angle-left ${showOptions ? 'rotate-90' : ''}`} style={{ transition: 'transform 0.3s' }}></i>
-                      </p>
-                    </a>
-                    <ul className="nav nav-treeview" style={{ display: showOptions ? 'block' : 'none', paddingLeft: '15px' }}>
+              {user?.permissions?.includes('dashboard') && (
+                <li className="nav-item">
+                  <Link to="/" className="nav-link" onClick={handleNavLinkClick}>
+                    <i className="nav-icon fas fa-tachometer-alt"></i>
+                    <p>Dashboard</p>
+                  </Link>
+                </li>
+              )}
+              {user?.permissions?.includes('transactions') && (
+                <li className="nav-item">
+                  <Link to="/transactions" className="nav-link" onClick={handleNavLinkClick}>
+                    <i className="nav-icon fas fa-list"></i>
+                    <p>Transações</p>
+                  </Link>
+                </li>
+              )}
+              {user?.permissions?.includes('categories') && (
+                <li className="nav-item">
+                  <Link to="/categories" className="nav-link" onClick={handleNavLinkClick}>
+                    <i className="nav-icon fas fa-tags"></i>
+                    <p>Categorias</p>
+                  </Link>
+                </li>
+              )}
+              {user?.permissions?.includes('commissions') && (
+                <li className="nav-item">
+                  <Link to="/commissions" className="nav-link" onClick={handleNavLinkClick}>
+                    <i className="nav-icon fas fa-hand-holding-usd text-success"></i>
+                    <p>Comissões</p>
+                  </Link>
+                </li>
+              )}
+              {(user?.permissions?.includes('backup') || user?.permissions?.includes('roles') || user?.permissions?.includes('users') || user?.permissions?.includes('settings')) && (
+                <li className={`nav-item ${showOptions ? 'menu-open' : ''}`}>
+                  <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setShowOptions(!showOptions); }}>
+                    <i className="nav-icon fas fa-cogs"></i>
+                    <p>
+                      Opções
+                      <i className={`right fas fa-angle-left ${showOptions ? 'rotate-90' : ''}`} style={{ transition: 'transform 0.3s' }}></i>
+                    </p>
+                  </a>
+                  <ul className="nav nav-treeview" style={{ display: showOptions ? 'block' : 'none', paddingLeft: '15px' }}>
+                    {user?.permissions?.includes('settings') && (
+                      <li className="nav-item">
+                        <Link to="/settings" className="nav-link" onClick={handleNavLinkClick}>
+                          <i className="nav-icon fas fa-sliders-h text-primary"></i>
+                          <p>Taxas Gerais</p>
+                        </Link>
+                      </li>
+                    )}
                       {user?.permissions?.includes('users') && (
                         <li className="nav-item">
                           <Link to="/users" className="nav-link" onClick={handleNavLinkClick}>
@@ -135,7 +150,6 @@ const Layout = () => {
                   </li>
                 )}
               </ul>
-            </ul>
           </nav>
         </div>
       </aside>

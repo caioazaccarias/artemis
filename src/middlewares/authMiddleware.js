@@ -26,7 +26,10 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ error: 'Token inválido' });
     }
 
+    console.log("DECODED JWT:", decoded);
+
     // Pendura o id e o role do usuário no request para os próximos middlewares/controllers usarem
+    req.user = { id: decoded.id };
     req.userId = decoded.id;
     req.userRole = decoded.role;
     req.userPermissions = decoded.permissions || [];
