@@ -55,7 +55,7 @@ const Login = () => {
                     <span className="fas fa-lock"></span>
                   </div>
                 </div>
-                {errors.password && <span className="error invalid-feedback d-block">{errors.password.message}</span>}
+                {errors.senha && <span className="error invalid-feedback d-block">{errors.senha.message}</span>}
               </div>
               <div className="row">
                 <div className="col-12">

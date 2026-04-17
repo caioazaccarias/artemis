@@ -31,8 +31,12 @@ app.get('/', (req, res) => {
 // Inicialização do Servidor e Banco de Dados
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, async () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  // Sincroniza as tabelas do banco de dados baseado nos Models
-  await syncDatabase();
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, async () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+    // Sincroniza as tabelas do banco de dados baseado nos Models
+    await syncDatabase();
+  });
+}
+
+module.exports = app;

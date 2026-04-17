@@ -1,6 +1,6 @@
 # Artemis - Documentação do Projeto
 
-Este documento apresenta uma visão geral do sistema Artemis (anteriormente conhecido como Controle Financeiro), incluindo seus principais recursos, regras de negócio, páginas, stack tecnológica e design system utilizado.
+Este documento apresenta uma visão geral do sistema Artemis, incluindo seus principais recursos, regras de negócio, páginas, stack tecnológica e design system utilizado.
 
 ## 🚀 Principais Recursos do Projeto
 
@@ -48,9 +48,13 @@ Este documento apresenta uma visão geral do sistema Artemis (anteriormente conh
 
 ## 🎨 Design System e UI
 
-O visual foi trabalhado e construído em bases administrativas modernas e de rápida leitura de BI (Business Intelligence):
+O visual do Artemis evoluiu para uma estética premium e moderna, focada em produtividade e clareza visual:
 
-- **Branding "Artemis":** Atualização na tipografia e nos vetores, voltada a um sistema polido, veloz e robusto.
-- **AdminLTE (v3) / Bootstrap 4:** Utilização da biblioteca AdminLTE como motor principal para gerar os Sidebars (menus em colunas), Painéis Modais, Tabelas estilizadas Responsivas e Elementos estruturais.
-- **FontAwesome (Free):** Motor para ícones de ação.
-- O sistema interage através de comportamentos otimizados de UX em formulários (ex: autofoco inteligente na Descrição do Lançamento, interações keydown de submissão do form) e tratamento assíncrono.
+- **Branding "Artemis":** Identidade visual polida com logotipia reconstruída e espaçamento tipográfico expandido.
+- **Tipografia Premium:** Utilização da fonte **Inter** (ou similar de alta performance) para garantir legibilidade superior e um ar tecnológico/limpo.
+- **Paleta de Cores (Artemis Blue):** Escala de azuis vibrantes (ex: `#0061ff`) para elementos de destaque, combinada com superfícies claras e neutras para reduzir o cansaço visual.
+- **Superfícies e Profundidade:**
+  - **Soft Shadows:** Uso de sombras suaves e multicamadas em substituição a bordas sólidas e pesadas.
+  - **Arredondamento Moderno:** Bordas com raios mais generosos (12px a 20px) para uma interface amigável e contemporânea.
+- **Glassmorphism:** Aplicação de efeitos de transparência leve e desfoque de fundo (*backdrop-filter*) em barras laterais e cabeçalhos para um toque de sofisticação.
+- **Componentes:** Embora utilize AdminLTE 3 / Bootstrap 4 como base estrutural, o sistema aplica camadas de customização CSS para remover o aspecto "padrão" e entregar uma experiência única.
