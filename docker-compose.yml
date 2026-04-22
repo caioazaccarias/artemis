@@ -59,6 +59,23 @@ services:
     networks:
       - artemis_network
 
+  # ─── Gerenciamento (phpMyAdmin) ──────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: artemis_phpmyadmin
+    restart: always
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - artemis_network
+
 networks:
   artemis_network:
     driver: bridge

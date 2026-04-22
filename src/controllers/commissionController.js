@@ -42,47 +42,47 @@ exports.index = async (req, res) => {
         let masterDateStr = master.data;
         let masterYearMonth = masterDateStr.substring(0, 7);
         
-        // Se a data do master for ANTERIOR (ou igual) ao mês procurado, verificamos a existência
-        if (targetYearMonth >= masterYearMonth) {
-          const childExists = await Commission.findOne({
-            where: {
-              user_id: userId,
-              is_fixo: true,
-              parent_id: master.id,
-              data: {
-                [Op.and]: [
-                  { [Op.gte]: `${targetYearMonth}-01` },
-                  { [Op.lte]: `${targetYearMonth}-31` }
-                ]
+        if (targetYearMonth >= masterYearMonth && targetYearMonth !== masterYearMonth) {
+          try {
+            // Verificação de existência dentro da transação (opcional se tivermos Unique Index, mas bom pra performance)
+            const childExists = await Commission.findOne({
+              where: {
+                user_id: userId,
+                parent_id: master.id,
+                data: { [Op.like]: `${targetYearMonth}%` }
               }
-            }
-          });
+            });
 
-          // Se é o próprio mês do master_id, o item pai *já* é a entrada referida
-          // Só criamos filhos se não for o mês de nascimento E se o filho não existir
-          if (!childExists && targetYearMonth !== masterYearMonth) {
-             const diaOriginal = masterDateStr.split('-')[2];
-             
-             // Clonagem dos dados originais para o filho atualizado
-             await Commission.create({
-                user_id: master.user_id,
-                data_os: master.data_os,
-                data: `${targetYearMonth}-${diaOriginal}`,
-                num_os: master.num_os,
-                cliente: master.cliente,
-                total: master.total,
-                tem_taxas: master.tem_taxas,
-                nome_taxa_aplicada: master.nome_taxa_aplicada,
-                valor_taxas: master.valor_taxas,
-                pecas: master.pecas,
-                despesas: master.despesas,
-                lucro: master.lucro,
-                porcentagem_comissao: master.porcentagem_comissao,
-                total_comissao: master.total_comissao,
-                observacoes: master.observacoes,
-                is_fixo: true,
-                parent_id: master.id
-             });
+            if (!childExists) {
+               const diaOriginal = parseInt(masterDateStr.split('-')[2]);
+               const lastDayOfTarget = new Date(ano, mes, 0).getDate();
+               const diaFinal = Math.min(diaOriginal, lastDayOfTarget);
+               
+               await Commission.create({
+                  user_id: master.user_id,
+                  data_os: master.data_os,
+                  data: `${targetYearMonth}-${String(diaFinal).padStart(2, '0')}`,
+                  num_os: master.num_os,
+                  cliente: master.cliente,
+                  total: master.total,
+                  tem_taxas: master.tem_taxas,
+                  nome_taxa_aplicada: master.nome_taxa_aplicada,
+                  valor_taxas: master.valor_taxas,
+                  pecas: master.pecas,
+                  despesas: master.despesas,
+                  lucro: master.lucro,
+                  porcentagem_comissao: master.porcentagem_comissao,
+                  total_comissao: master.total_comissao,
+                  observacoes: master.observacoes,
+                  is_fixo: true,
+                  parent_id: master.id
+               });
+            }
+          } catch (createErr) {
+            // Se cair aqui por erro de unicidade, significa que outro processo criou ao mesmo tempo. ignoramos.
+            if (createErr.name !== 'SequelizeUniqueConstraintError') {
+              console.error('Erro ao provisionar registro:', createErr);
+            }
           }
         }
       }
@@ -271,3 +271,15 @@ exports.destroy = async (req, res) => {
      res.status(500).json({ error: 'Erro ao excluir.'});
   }
 };
+
+exports.purge = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await Commission.destroy({ where: { user_id: userId } });
+    res.json({ success: true, message: 'Todos os registros foram removidos.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao limpar registros.' });
+  }
+};
+

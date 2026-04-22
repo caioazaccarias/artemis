@@ -78,6 +78,13 @@ const Commission = sequelize.define('Commission', {
 }, {
   tableName: 'commissions',
   timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['parent_id', 'data'],
+      name: 'unique_parent_data'
+    }
+  ]
 });
 
 module.exports = Commission;

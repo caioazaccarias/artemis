@@ -10,7 +10,7 @@ const Role = sequelize.define('Role', {
   nome: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: 'idx_roles_nome',
   },
   permissoes: {
     type: DataTypes.JSON,

@@ -10,7 +10,7 @@ const AppSetting = sequelize.define('AppSetting', {
   key: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true
+    unique: 'idx_app_settings_key'
   },
   value: {
     type: DataTypes.JSON, // Arrays or JSON objects

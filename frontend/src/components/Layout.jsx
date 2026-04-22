@@ -88,19 +88,19 @@ const Layout = () => {
                   </Link>
                 </li>
               )}
+              {user?.permissions?.includes('commissions') && (
+                <li className="nav-item">
+                  <Link to="/commissions" className="nav-link" onClick={handleNavLinkClick}>
+                    <i className="nav-icon fas fa-hand-holding-usd"></i>
+                    <p>Comissionamento</p>
+                  </Link>
+                </li>
+              )}
               {user?.permissions?.includes('categories') && (
                 <li className="nav-item">
                   <Link to="/categories" className="nav-link" onClick={handleNavLinkClick}>
                     <i className="nav-icon fas fa-tags"></i>
                     <p>Categorias</p>
-                  </Link>
-                </li>
-              )}
-              {user?.permissions?.includes('commissions') && (
-                <li className="nav-item">
-                  <Link to="/commissions" className="nav-link" onClick={handleNavLinkClick}>
-                    <i className="nav-icon fas fa-hand-holding-usd text-success"></i>
-                    <p>Comissões</p>
                   </Link>
                 </li>
               )}
@@ -122,34 +122,34 @@ const Layout = () => {
                         </Link>
                       </li>
                     )}
-                      {user?.permissions?.includes('users') && (
-                        <li className="nav-item">
-                          <Link to="/users" className="nav-link" onClick={handleNavLinkClick}>
-                            <i className="nav-icon fas fa-users"></i>
-                            <p>Usuários</p>
-                          </Link>
-                        </li>
-                      )}
-                      {user?.permissions?.includes('backup') && (
-                        <li className="nav-item">
-                          <Link to="/backup" className="nav-link" onClick={handleNavLinkClick}>
-                            <i className="fas fa-database nav-icon text-info"></i>
-                            <p>Backup</p>
-                          </Link>
-                        </li>
-                      )}
-                      {user?.permissions?.includes('roles') && (
-                        <li className="nav-item">
-                          <Link to="/roles" className="nav-link" onClick={handleNavLinkClick}>
-                            <i className="nav-icon fas fa-user-tag"></i>
-                            <p>Perfis</p>
-                          </Link>
-                        </li>
-                      )}
-                    </ul>
-                  </li>
-                )}
-              </ul>
+                    {user?.permissions?.includes('users') && (
+                      <li className="nav-item">
+                        <Link to="/users" className="nav-link" onClick={handleNavLinkClick}>
+                          <i className="nav-icon fas fa-users"></i>
+                          <p>Usuários</p>
+                        </Link>
+                      </li>
+                    )}
+                    {user?.permissions?.includes('backup') && (
+                      <li className="nav-item">
+                        <Link to="/backup" className="nav-link" onClick={handleNavLinkClick}>
+                          <i className="fas fa-database nav-icon text-info"></i>
+                          <p>Backup</p>
+                        </Link>
+                      </li>
+                    )}
+                    {user?.permissions?.includes('roles') && (
+                      <li className="nav-item">
+                        <Link to="/roles" className="nav-link" onClick={handleNavLinkClick}>
+                          <i className="nav-icon fas fa-user-tag"></i>
+                          <p>Perfis</p>
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </li>
+              )}
+            </ul>
           </nav>
         </div>
       </aside>

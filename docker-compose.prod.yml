@@ -45,6 +45,13 @@ services:
       VIRTUAL_HOST: ${DOMAIN}
       VIRTUAL_PORT: 80
       LETSENCRYPT_HOST: ${DOMAIN}
+      
+  # ─── phpMyAdmin: expõe ao proxy via variáveis de ambiente ─────────────
+  phpmyadmin:
+    environment:
+      VIRTUAL_HOST: phpmyadmin.caiozaccarias.com.br
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: phpmyadmin.caiozaccarias.com.br
 
 volumes:
   nginx_certs:
