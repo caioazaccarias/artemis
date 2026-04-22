@@ -3,8 +3,18 @@ const { Op } = require('sequelize');
 
 // Helper to add months purely without timezone issues
 function addMonthsStr(dateStr, monthsToAdd) {
-  const [year, month, day] = dateStr.split('-');
-  const dateObj = new Date(year, parseInt(month) - 1, day);
+  let dateObj;
+  try {
+    if (dateStr && typeof dateStr === 'string' && dateStr.includes('-')) {
+      const [year, month, day] = dateStr.split('-');
+      dateObj = new Date(year, parseInt(month) - 1, day);
+    } else {
+      dateObj = new Date(dateStr);
+    }
+    if (isNaN(dateObj.getTime())) dateObj = new Date();
+  } catch (e) {
+    dateObj = new Date();
+  }
   dateObj.setMonth(dateObj.getMonth() + monthsToAdd);
   return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
 }
@@ -38,51 +48,58 @@ exports.index = async (req, res) => {
         }
       });
 
-      for (let master of fixedMasters) {
-        let masterDateStr = master.data;
-        let masterYearMonth = masterDateStr.substring(0, 7);
-        
-        if (targetYearMonth >= masterYearMonth && targetYearMonth !== masterYearMonth) {
-          try {
-            // Verificação de existência dentro da transação (opcional se tivermos Unique Index, mas bom pra performance)
-            const childExists = await Commission.findOne({
-              where: {
-                user_id: userId,
-                parent_id: master.id,
-                data: { [Op.like]: `${targetYearMonth}%` }
-              }
-            });
+      if (fixedMasters.length > 0) {
+        // Busca todos os filhos já existentes para esses mestres no mês alvo em UMA ÚNICA QUERY
+        const existingChildren = await Commission.findAll({
+          where: {
+            user_id: userId,
+            parent_id: { [Op.in]: fixedMasters.map(m => m.id) },
+            data: { [Op.like]: `${targetYearMonth}%` }
+          },
+          attributes: ['parent_id']
+        });
 
-            if (!childExists) {
-               const diaOriginal = parseInt(masterDateStr.split('-')[2]);
-               const lastDayOfTarget = new Date(ano, mes, 0).getDate();
-               const diaFinal = Math.min(diaOriginal, lastDayOfTarget);
-               
-               await Commission.create({
-                  user_id: master.user_id,
-                  data_os: master.data_os,
-                  data: `${targetYearMonth}-${String(diaFinal).padStart(2, '0')}`,
-                  num_os: master.num_os,
-                  cliente: master.cliente,
-                  total: master.total,
-                  tem_taxas: master.tem_taxas,
-                  nome_taxa_aplicada: master.nome_taxa_aplicada,
-                  valor_taxas: master.valor_taxas,
-                  pecas: master.pecas,
-                  despesas: master.despesas,
-                  lucro: master.lucro,
-                  porcentagem_comissao: master.porcentagem_comissao,
-                  total_comissao: master.total_comissao,
-                  observacoes: master.observacoes,
-                  is_fixo: true,
-                  parent_id: master.id
-               });
+        const existingParentIds = new Set(existingChildren.map(c => c.parent_id));
+        const toCreate = [];
+
+        for (let master of fixedMasters) {
+          let masterDateStr = master.data;
+          let masterYearMonth = masterDateStr.substring(0, 7);
+          
+          if (targetYearMonth >= masterYearMonth && targetYearMonth !== masterYearMonth) {
+            if (!existingParentIds.has(master.id)) {
+              const diaOriginal = parseInt(masterDateStr.split('-')[2]);
+              const lastDayOfTarget = new Date(ano, mes, 0).getDate();
+              const diaFinal = Math.min(diaOriginal, lastDayOfTarget);
+              
+              toCreate.push({
+                user_id: master.user_id,
+                data_os: master.data_os,
+                data: `${targetYearMonth}-${String(diaFinal).padStart(2, '0')}`,
+                num_os: master.num_os,
+                cliente: master.cliente,
+                total: master.total,
+                tem_taxas: master.tem_taxas,
+                nome_taxa_aplicada: master.nome_taxa_aplicada,
+                valor_taxas: master.valor_taxas,
+                pecas: master.pecas,
+                despesas: master.despesas,
+                lucro: master.lucro,
+                porcentagem_comissao: master.porcentagem_comissao,
+                total_comissao: master.total_comissao,
+                observacoes: master.observacoes,
+                is_fixo: true,
+                parent_id: master.id
+              });
             }
-          } catch (createErr) {
-            // Se cair aqui por erro de unicidade, significa que outro processo criou ao mesmo tempo. ignoramos.
-            if (createErr.name !== 'SequelizeUniqueConstraintError') {
-              console.error('Erro ao provisionar registro:', createErr);
-            }
+          }
+        }
+
+        if (toCreate.length > 0) {
+          try {
+            await Commission.bulkCreate(toCreate, { ignoreDuplicates: true });
+          } catch (bulkErr) {
+            console.error('Erro ao realizar provisionamento em massa:', bulkErr);
           }
         }
       }
@@ -220,7 +237,9 @@ exports.update = async (req, res) => {
         const parentIdTarget = commission.parent_id || commission.id;
         const cutoffDate = commission.data;
 
-        await Commission.update(updatePayload, {
+        const futurePayload = { ...updatePayload };
+        delete futurePayload.data;
+        await Commission.update(futurePayload, {
            where: {
              user_id: userId,
              data: { [Op.gt]: cutoffDate }, // Modifica apenas quem está cravado estritamente à frente na fita de tempo
@@ -280,6 +299,97 @@ exports.purge = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erro ao limpar registros.' });
+  }
+};
+
+exports.bulkCreate = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({ error: 'Dados inválidos.' });
+    }
+
+    const configPct = await AppSetting.findOne({ where: { key: 'commission_percentage' } });
+    const porcentagem_comissao = configPct ? parseFloat(configPct.value) : 10;
+
+    let totalCreated = 0;
+
+    for (const item of items) {
+      const total = parseFloat(item.total) || 0;
+      const pecas = parseFloat(item.pecas) || 0;
+      const despesas = parseFloat(item.despesas) || 0;
+      const valor_taxas = parseFloat(item.valor_taxas) || 0;
+      const lucro = total - valor_taxas - pecas - despesas;
+      const total_comissao = lucro * (porcentagem_comissao / 100);
+
+      // Interpreta campos do Excel
+      const is_fixo = (item.is_fixo === 1 || item.is_fixo === '1' || item.is_fixo === true);
+      const parcelas = parseInt(item.parcelas) || 1;
+
+      const master = await Commission.create({
+        user_id: userId,
+        data_os: item.data_os,
+        data: item.data,
+        num_os: item.num_os,
+        cliente: item.cliente,
+        total,
+        tem_taxas: valor_taxas > 0,
+        nome_taxa_aplicada: item.nome_taxa_aplicada || null,
+        valor_taxas,
+        pecas,
+        despesas,
+        lucro,
+        porcentagem_comissao,
+        total_comissao,
+        observacoes: item.observacoes || '',
+        is_fixo,
+        parent_id: null
+      });
+
+      totalCreated++;
+
+      // Se for parcelado e não for fixo (fixo é recorrente infinito via provisionamento)
+      if (parcelas > 1 && !is_fixo) {
+        const bulkChildren = [];
+        for (let i = 1; i < parcelas; i++) {
+          let futureData = addMonthsStr(item.data, i);
+          bulkChildren.push({
+            user_id: userId,
+            data_os: item.data_os,
+            data: futureData,
+            num_os: item.num_os,
+            cliente: item.cliente,
+            total,
+            tem_taxas: valor_taxas > 0,
+            nome_taxa_aplicada: item.nome_taxa_aplicada || null,
+            valor_taxas,
+            pecas,
+            despesas,
+            lucro,
+            porcentagem_comissao,
+            total_comissao,
+            observacoes: item.observacoes || '',
+            is_fixo: false,
+            parent_id: master.id
+          });
+        }
+        if (bulkChildren.length > 0) {
+          await Commission.bulkCreate(bulkChildren);
+          totalCreated += bulkChildren.length;
+        }
+      }
+    }
+
+    res.status(201).json({ success: true, count: totalCreated });
+  } catch (error) {
+    console.error('ERRO NO BULK CREATE:', error);
+    res.status(500).json({ 
+      error: 'Erro ao importar comissões.', 
+      message: error.message,
+      detail: error.errors ? error.errors.map(e => e.message).join(', ') : null
+    });
   }
 };
 

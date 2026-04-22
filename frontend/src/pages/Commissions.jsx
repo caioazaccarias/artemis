@@ -98,6 +98,10 @@ const Commissions = () => {
     return lucroPrevisto * pct;
   }, [lucroPrevisto, globalSettings.commission_percentage]);
 
+  const totalComissaoGeral = useMemo(() => {
+    return commissions.reduce((acc, curr) => acc + (parseFloat(curr.total_comissao) || 0), 0);
+  }, [commissions]);
+
   const handleOpenNewModal = () => {
     setEditingId(null);
     reset({
@@ -197,36 +201,181 @@ const Commissions = () => {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (commissions.length === 0) return;
-    const worksheet = XLSX.utils.json_to_sheet(commissions.map(c => ({
-      'Data OS': c.data_os, 'Data': c.data, 'Nº OS / Ref': c.num_os, 'Cliente': c.cliente,
-      'Total': c.total, 'Taxas Retidas': (parseFloat(c.valor_taxas) || 0) + (parseFloat(c.pecas) || 0) + (parseFloat(c.despesas) || 0),
-      'Lucro Líquido': c.lucro, 'Comissão Final': c.total_comissao
-    })));
-    const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório Faturamento");
-    XLSX.writeFile(workbook, `Faturamento_Artemis_${mesAtual}_${anoAtual}.xlsx`);
+
+    const { value: additionalNote, isDismissed } = await Swal.fire({
+      title: 'Observação Adicional (Excel)',
+      input: 'textarea',
+      inputLabel: 'Deseja adicionar alguma nota geral ao relatório?',
+      inputPlaceholder: 'Digite aqui...',
+      showCancelButton: true,
+      confirmButtonText: 'Exportar Excel',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745'
+    });
+
+    if (isDismissed) return;
+
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const monthName = monthNames[mesAtual - 1].toUpperCase();
+    const title = `COMISSIONAMENTO - ${monthName} - ${anoAtual}`;
+
+    // Construção do conteúdo do Excel usando Array of Arrays (aoa) para maior controle
+    const rows = [
+      [title],
+      [],
+      ["DATA", "OS", "CLIENTE", "TOTAL", "PEÇAS", "DESPESAS", "TAXAS", "PARC.", "COMISSÃO", "%"]
+    ];
+
+    commissions.forEach(c => {
+      rows.push([
+        c.data_os ? format(parseISO(c.data_os), 'dd/MM/yyyy') : '',
+        c.num_os,
+        c.cliente,
+        parseFloat(c.total) || 0,
+        parseFloat(c.pecas) || 0,
+        parseFloat(c.despesas) || 0,
+        parseFloat(c.valor_taxas) || 0,
+        c.is_fixo ? 'Fixo' : (c.parent_id ? 'Parc.' : '1'),
+        parseFloat(c.total_comissao) || 0,
+        `${parseFloat(c.porcentagem_comissao)}%`
+      ]);
+    });
+
+    const totalComissaoGeral = commissions.reduce((acc, curr) => acc + (parseFloat(curr.total_comissao) || 0), 0);
+    rows.push(['', '', '', '', '', '', '', 'TOTAL:', totalComissaoGeral, '']);
+
+    // Seção de Observações Detalhadas
+    const obsItems = commissions.filter(c => c.observacoes && c.observacoes.trim() !== '');
+    if (obsItems.length > 0 || (additionalNote && additionalNote.trim() !== '')) {
+      rows.push([]);
+      rows.push(["OBSERVAÇÕES DETALHADAS"]);
+      
+      if (additionalNote && additionalNote.trim() !== '') {
+        rows.push(["NOTA GERAL:"]);
+        rows.push([additionalNote]);
+        rows.push([]);
+      }
+
+      if (obsItems.length > 0) {
+        rows.push(["REF (OS)", "CLIENTE", "OBSERVAÇÃO"]);
+        obsItems.forEach(c => {
+          rows.push([c.num_os, c.cliente, c.observacoes]);
+        });
+      }
+    }
+
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Comissionamento");
+    XLSX.writeFile(workbook, `${title}.xlsx`);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (commissions.length === 0) return;
-    const doc = new jsPDF('landscape');
-    doc.text(`Artemis - Relatório de Fechamento / Comissões`, 14, 15);
-    doc.setFontSize(10);
-    doc.text(`Competência: ${String(mesAtual).padStart(2, '0')}/${anoAtual}`, 14, 22);
 
-    const tableColumn = ["DATA OS", "DATA LANÇ.", "NUM. OS / PROJ", "CLIENTE", "TOTAL BRUTO", "LUCRO BASE", "COMISSÃO DEVIDA"];
+    const { value: additionalNote, isDismissed } = await Swal.fire({
+      title: 'Observação Adicional',
+      input: 'textarea',
+      inputLabel: 'Deseja adicionar alguma nota geral ao relatório?',
+      inputPlaceholder: 'Digite aqui...',
+      showCancelButton: true,
+      confirmButtonText: 'Exportar PDF',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#0061ff'
+    });
+
+    if (isDismissed) return;
+
+    const doc = new jsPDF('landscape');
+    const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const monthName = monthNames[mesAtual - 1].toUpperCase();
+    const title = `COMISSIONAMENTO - ${monthName} - ${anoAtual}`;
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.setFontSize(18);
+    doc.text(title, pageWidth / 2, 15, { align: 'center' });
+    
+    const totalComissaoGeralExport = commissions.reduce((acc, curr) => acc + (parseFloat(curr.total_comissao) || 0), 0);
+    
+    const tableColumn = ["DATA", "OS", "CLIENTE", "TOTAL", "PEÇAS", "DESPESAS", "TAXAS", "PARC.", "COMISSÃO", "%"];
     const tableRows = commissions.map(c => [
-      c.data_os ? format(parseISO(c.data_os), 'dd/MM/yy') : '',
-      format(parseISO(c.data), 'dd/MM/yyyy'),
+      c.data_os ? format(parseISO(c.data_os), 'dd/MM/yyyy') : '',
       c.num_os,
       c.cliente,
       `R$ ${parseFloat(c.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      `R$ ${parseFloat(c.lucro).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      `R$ ${parseFloat(c.total_comissao).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      `R$ ${parseFloat(c.pecas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      `R$ ${parseFloat(c.despesas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      `R$ ${parseFloat(c.valor_taxas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      c.is_fixo ? 'Fixo' : (c.parent_id ? 'Parc.' : '1'),
+      `R$ ${parseFloat(c.total_comissao).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      `${parseFloat(c.porcentagem_comissao)}%`
     ]);
-    autoTable(doc, { head: [tableColumn], body: tableRows, startY: 28, theme: 'grid' });
-    doc.save(`Fechamento_${mesAtual}_${anoAtual}.pdf`);
+
+    // Linha de Total
+    tableRows.push([
+      { content: 'TOTAL:', colSpan: 8, styles: { halign: 'right', fontStyle: 'bold' } },
+      { content: `R$ ${totalComissaoGeralExport.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } },
+      ''
+    ]);
+    
+    autoTable(doc, { 
+      head: [tableColumn], 
+      body: tableRows, 
+      startY: 25, 
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [0, 97, 255], halign: 'center' },
+      columnStyles: {
+        3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 
+        6: { halign: 'right' }, 7: { halign: 'center' }, 8: { halign: 'right' }, 
+        9: { halign: 'center' }
+      }
+    });
+
+    // Seção de Observações no final
+    const obsRows = commissions
+      .filter(c => c.observacoes && c.observacoes.trim() !== '')
+      .map(c => [c.num_os, c.cliente, c.observacoes]);
+
+    if (obsRows.length > 0 || (additionalNote && additionalNote.trim() !== '')) {
+      const finalY = doc.lastAutoTable.finalY || 25;
+      
+      // Verifica se precisa de nova página
+      let currentY = finalY + 15;
+      if (currentY > 180) {
+        doc.addPage();
+        currentY = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.text("OBSERVAÇÕES DETALHADAS", 14, currentY);
+      currentY += 10;
+
+      if (additionalNote && additionalNote.trim() !== '') {
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text("NOTA GERAL:", 14, currentY);
+        doc.setFont(undefined, 'normal');
+        const splitNote = doc.splitTextToSize(additionalNote, pageWidth - 28);
+        doc.text(splitNote, 14, currentY + 5);
+        currentY += (splitNote.length * 5) + 10;
+      }
+
+      if (obsRows.length > 0) {
+        autoTable(doc, {
+          head: [['REF (OS)', 'CLIENTE', 'OBSERVAÇÃO']],
+          body: obsRows,
+          startY: currentY,
+          theme: 'striped',
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [100, 100, 100] }
+        });
+      }
+    }
+    
+    doc.save(`${title}.pdf`);
   };
 
   return (
@@ -273,8 +422,11 @@ const Commissions = () => {
                 <input type="text" className="form-control border-left-0" placeholder="Ex: Nome da empresa..." value={search} onChange={e => setSearch(e.target.value)} />
               </div>
             </div>
-            <div className="col-md-4 text-right">
+            <div className="col-md-4 text-right d-flex align-items-center justify-content-end" style={{ gap: '10px' }}>
               <span className="badge badge-light border px-3 py-2 text-primary font-weight-bold">{commissions.length} registros</span>
+              <span className="badge bg-success-soft border px-3 py-2 text-success font-weight-bold">
+                TOTAL: R$ {totalComissaoGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
             </div>
           </div>
         </div>

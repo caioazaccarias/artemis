@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 const Settings = () => {
   const [commissionPct, setCommissionPct] = useState(10);
@@ -75,6 +76,79 @@ const Settings = () => {
     } catch(e) {
       Swal.fire('Erro', 'Falha ao remover taxa.', 'error');
     }
+  };
+
+  const handleDownloadExample = () => {
+    const exampleData = [
+      {
+        data_os: '2024-01-01',
+        data: '2024-01-05',
+        num_os: 'OS123',
+        cliente: 'CLIENTE EXEMPLO',
+        total: 1000.00,
+        pecas: 100.00,
+        despesas: 50.00,
+        valor_taxas: 30.00,
+        is_fixo: 0,
+        parcelas: 1,
+        observacoes: 'Importação em massa'
+      },
+      {
+        data_os: '2024-01-02',
+        data: '2024-01-02',
+        num_os: 'FIXO',
+        cliente: 'CLIENTE RECORRENTE',
+        total: 500.00,
+        pecas: 0,
+        despesas: 0,
+        valor_taxas: 0,
+        is_fixo: 1,
+        parcelas: 1,
+        observacoes: 'Será repetido todo mês'
+      }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(exampleData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Exemplo Importação");
+    XLSX.writeFile(workbook, "Artemis_Modelo_Importacao.xlsx");
+  };
+
+  const handleImportExcel = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        
+        // raw: false e dateNF garantem que as datas do Excel venham como strings formatadas
+        const data = XLSX.utils.sheet_to_json(ws, { raw: false, dateNF: 'yyyy-mm-dd' });
+
+        if (data.length === 0) {
+          Swal.fire('Aviso', 'A planilha está vazia.', 'warning');
+          return;
+        }
+
+        const res = await api.post('/commissions/bulk', { items: data });
+        Swal.fire('Sucesso', `${res.data.count} registros importados com sucesso!`, 'success');
+        e.target.value = ''; // Reset input
+      } catch (err) {
+        console.error(err);
+        const errorMsg = err.response?.data?.error || 'Erro na importação';
+        const errorDetail = err.response?.data?.detail || err.response?.data?.message || err.message;
+        Swal.fire({
+          title: 'Erro na Importação',
+          html: `<b>${errorMsg}</b><br/><br/><small>${errorDetail}</small>`,
+          icon: 'error'
+        });
+      }
+    };
+    reader.readAsBinaryString(file);
   };
 
   if (loading) return <div className="p-5 text-center"><div className="spinner-border text-primary"></div></div>;
@@ -159,6 +233,37 @@ const Settings = () => {
                   ))}
                 </ul>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bloco Importação/Exportação */}
+      <div className="row mt-2">
+        <div className="col-12 mb-4">
+          <div className="card shadow-sm border-0 rounded-lg">
+            <div className="card-header bg-white border-bottom-0 pt-4 pb-0">
+              <h5 className="font-weight-bold text-success mb-0"><i className="fas fa-file-import mr-2"></i> Importação & Exportação de Dados</h5>
+            </div>
+            <div className="card-body pt-3">
+              <div className="row align-items-center">
+                <div className="col-md-6">
+                  <p className="text-muted small mb-3">Baixe uma planilha modelo para preencher com seus dados e importar tudo de uma vez para o sistema.</p>
+                  <button className="btn btn-outline-success btn-sm font-weight-bold px-4 mb-3" onClick={handleDownloadExample}>
+                    <i className="fas fa-file-excel mr-2"></i> BAIXAR PLANILHA MODELO
+                  </button>
+                </div>
+                <div className="col-md-6 border-left pl-md-5">
+                  <label className="text-xs font-weight-bold text-muted text-uppercase mb-2 d-block">Selecionar arquivo para importação</label>
+                  <div className="custom-file mb-2">
+                    <input type="file" className="custom-file-input" id="importFile" accept=".xlsx, .xls" onChange={handleImportExcel} />
+                    <label className="custom-file-label" htmlFor="importFile">Escolher planilha...</label>
+                  </div>
+                  <small className="text-info d-block mb-1"><i className="fas fa-info-circle mr-1"></i> Use <b>is_fixo = 1</b> para registros recorrentes.</small>
+                  <small className="text-info d-block mb-2"><i className="fas fa-info-circle mr-1"></i> Use <b>parcelas &gt; 1</b> para gerar parcelamento automático.</small>
+                  <small className="text-muted small"><i className="fas fa-exclamation-triangle mr-1"></i> Apenas arquivos .xlsx ou .xls são aceitos.</small>
+                </div>
+              </div>
             </div>
           </div>
         </div>

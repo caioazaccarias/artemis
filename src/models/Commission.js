@@ -83,6 +83,18 @@ const Commission = sequelize.define('Commission', {
       unique: true,
       fields: ['parent_id', 'data'],
       name: 'unique_parent_data'
+    },
+    {
+      fields: ['user_id'],
+      name: 'idx_commissions_user'
+    },
+    {
+      fields: ['data'],
+      name: 'idx_commissions_data'
+    },
+    {
+      fields: ['is_fixo'],
+      name: 'idx_commissions_fixo'
     }
   ]
 });

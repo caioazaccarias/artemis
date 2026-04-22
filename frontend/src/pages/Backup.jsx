@@ -45,7 +45,7 @@ const BackupData = () => {
     // Confirmação dupla para ação crítica
     const result = await Swal.fire({
       title: 'Tem absoluta certeza?',
-      text: 'Esta ação apagará TODAS as transações e categorias atuais para restaurar as do arquivo. Isso não pode ser desfeito!',
+      text: 'Esta ação apagará TODOS os dados do sistema (Transações, Categorias, Comissões, Usuários, Perfis e Configurações) para restaurar os do arquivo. Isso não pode ser desfeito!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -66,8 +66,16 @@ const BackupData = () => {
           Swal.fire({
             icon: 'success',
             title: 'Restauração Concluída!',
-            text: `Foram restauradas ${response.data.summary.categories} categorias e ${response.data.summary.transactions} transações.`,
-            confirmButtonText: 'Ótimo!'
+            html: `O sistema foi restaurado com sucesso:<br/><br/>
+                   <div class="text-left" style="font-size: 0.9rem;">
+                    <b>• ${response.data.summary.roles}</b> Perfis/Roles<br/>
+                    <b>• ${response.data.summary.users}</b> Usuários e Credenciais<br/>
+                    <b>• ${response.data.summary.categories}</b> Categorias<br/>
+                    <b>• ${response.data.summary.transactions}</b> Transações de Caixa<br/>
+                    <b>• ${response.data.summary.commissions}</b> Registros de Comissões<br/>
+                    <b>• ${response.data.summary.settings}</b> Configurações do App
+                   </div>`,
+            confirmButtonText: 'Entendido'
           });
         } catch (error) {
           console.error(error);
@@ -109,7 +117,7 @@ const BackupData = () => {
                     <i className="fas fa-database fa-4x text-primary opacity-25"></i>
                   </div>
                   <p className="text-muted mb-4 px-3">
-                    Cria uma cópia completa de todas as **Categorias** e **Transações** registradas no sistema em formato JSON.
+                    Cria uma cópia completa de **toda a estrutura do sistema**, incluindo Usuários, Perfis, Categorias, Transações, Comissões e Configurações.
                   </p>
                   <div>
                     <button 
@@ -162,9 +170,9 @@ const BackupData = () => {
               <div className="callout callout-info shadow-sm bg-white border-left-info">
                 <h5><i className="fas fa-info-circle mr-2 text-info"></i> Notas Importantes</h5>
                 <ul className="mb-0 text-muted">
-                  <li>O backup contém apenas transações e categorias. Usuários e configurações de conta não são afetados.</li>
+                  <li>O backup agora é **completo**: inclui usuários, permissões, comissões e todas as configurações globais.</li>
                   <li>Recomendamos realizar backups semanais para garantir a integridade das suas informações.</li>
-                  <li>Arquivos grandes podem levar alguns segundos para serem processados. Não feche a aba durante a restauração.</li>
+                  <li>A restauração é destrutiva: ela limpa o banco de dados atual antes de injetar os dados do arquivo.</li>
                 </ul>
               </div>
             </div>

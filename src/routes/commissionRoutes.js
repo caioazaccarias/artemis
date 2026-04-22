@@ -9,6 +9,7 @@ router.use(permissionMiddleware(['commissions']));
 
 router.get('/', commissionController.index);
 router.post('/', commissionController.create);
+router.post('/bulk', commissionController.bulkCreate);
 router.put('/:id', commissionController.update);
 router.delete('/:id', commissionController.destroy);
 router.delete('/purge/all', commissionController.purge);
