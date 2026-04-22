@@ -15,12 +15,16 @@
     "admin-lte": "^3.2.0",
     "axios": "^1.15.0",
     "bootstrap": "^4.6.2",
+    "date-fns": "^4.1.0",
+    "jspdf": "^3.0.0",
+    "jspdf-autotable": "^5.0.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.72.1",
     "react-router-dom": "^7.14.0",
     "recharts": "^3.8.1",
-    "sweetalert2": "^11.26.24"
+    "sweetalert2": "^11.26.24",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
